@@ -1,0 +1,177 @@
+/* Hex Color Company Pallete
+#f7d091, #cfae7c, #ffffff, #797979, #343434, #b8b8b8, #171717, #531a89, #ac895b, #643e00
+*/
+
+.xure-landing-body {
+  font-family: "Space Grotesk", sans-serif;
+  background-image: 
+    radial-gradient(circle at 30% 30%, #171717 20%, transparent 60%),
+    radial-gradient(circle at 70% 70%, #531a89 20%, transparent 60%),
+    radial-gradient(circle at 50% 50%, #171717 20%, #171717 20%);
+  background-blend-mode: screen;
+  overflow-x: hidden;
+}
+
+.xure-landing {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.xure-header {
+  padding: 50px 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.xure-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.xure-nav ul li {
+  list-style: none;
+  display: inline-block;
+  margin: 0 15px;
+}
+
+.xure-nav ul li a {
+  color: #b8b8b8;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+
+.xure-nav ul li a:hover {
+  color: #f7d091;
+}
+
+.xure-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 50px 100px 0;
+}
+
+.xure-text {
+  width: 50%;
+  padding-right: 150px;
+}
+
+.xure-text p {
+  font-size: 25px;
+  line-height: 40px;
+  color: #f7d091;
+}
+
+.xure-btn {
+  position: relative;
+  display: inline-block;
+  font-size: 18px;
+  text-transform: uppercase;
+  color: #f7d091;
+  text-decoration: none;
+  padding: 18px 30px;
+  letter-spacing: 2px;
+  font-weight: 500;
+  margin-top: 60px;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.xure-btn:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50px;
+  background-color: #531a89;
+  z-index: -1;
+  transition: all ease 0.5s;
+}
+
+.xure-btn:hover {
+  transform: scale(1.1);
+  text-shadow: 0 0 15px #cfae7c;
+}
+
+.xure-btn:hover:before {
+  width: 100%;
+}
+
+.xure-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+.xure-logo img {
+  position: fixed;
+  top: 3em;
+  width: 150px;
+  height: auto;
+}
+
+
+@media (max-width: 1024px) {
+  .xure-header {
+    padding: 30px 50px;
+  }
+  .xure-content {
+    padding: 40px 50px 0;
+  }
+  .xure-text {
+    padding-right: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .xure-header {
+    padding: 20px 30px;
+  }
+  .xure-content {
+    padding: 30px 30px 0;
+    flex-direction: column;
+    align-items: center;
+  }
+  .xure-text {
+    width: 100%;
+    padding-right: 0;
+    text-align: center;
+  }
+  .xure-btn {
+    margin-top: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .xure-header {
+    padding: 15px 20px;
+  }
+  .xure-nav ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .xure-nav ul li {
+    margin: 5px 0;
+  }
+  .xure-content {
+    padding: 20px 20px 0;
+  }
+  .xure-text p {
+    font-size: 20px;
+    line-height: 30px;
+  }
+  .xure-btn {
+    padding: 12px 20px;
+  }
+  .xure-logo img {
+    width: 120px;
+  }
+}
