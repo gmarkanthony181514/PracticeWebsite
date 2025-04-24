@@ -1,18 +1,26 @@
-import { useState, useEffect} from "react";
+import React, { useState, useContext} from "react";
+import { useNavigate } from 'react-router-dom';
 //Animation Design
 import { motion, AnimatePresence } from "framer-motion";
 //Package Icons
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart, Heart, EyeIcon } from "lucide-react";
 //Installed Notification
 import { toast } from 'react-hot-toast';
+//Importing useContext
+import { AppContext } from "../AppContext";
+//Backend Calling
+import { API_BACKENDAPI_URL } from "../../varConstant";
 
 const ProductCard = ({ product, addToCart, addToWishlist }) => {
   const [showModal, setShowModal] = useState(false);
   const [showAddtoCartModal, setShowAddtoCartModal] = useState(false);
   const [showWishlistModal, setShowWishlistModal] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
+  const { cartItems, setCartItems, wishlistItems, setWishlistItems } = useContext(AppContext);
+  
+  
   //Product Card click Handler
   const handleCardClick = () => {
     setShowModal(true);
@@ -22,70 +30,175 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
   const handleAddToCart = async () => {
     try {
       setIsLoading(true);
-      if (cartItems.some(item => item.id === product.id)) {
-        throw new Error(" ⚠️ This product is already in your cart!");
-      } 
-      setCartItems(prevItems => [...prevItems, product]);
+  
+      const isUserLoggedIn = !!sessionStorage.getItem("token");
+      if (!isUserLoggedIn) {
+        toast.error("⚠️ You need to be logged in to add items to your cart.");
+        return;
+      }
+  
+      // Check if the item is already in the cart
+      if (cartItems.some((item) => item.marketID === product.marketID)) {
+        toast.error("⚠️ This product is already in your cart!");
+        return;
+      }
+  
+      // Add the item to the cart
+      setCartItems((prevItems) => {
+        const updatedCart = [...prevItems, product];
+        sessionStorage.setItem("cartItems", JSON.stringify(updatedCart)); // Save to sessionStorage
+        return updatedCart;
+      });
+  
       setShowModal(false);
       setTimeout(() => {
-        addToCart(product);
         setShowAddtoCartModal(true);
         setTimeout(() => {
           setShowAddtoCartModal(false);
         }, 1000);
       }, 300);
     } catch (error) {
-        toast.error(error.message || " ⚠️ Network error. Please check your connection");
+      console.error("⚠️ Error in handleAddToCart:", error);
+      toast.error(error.message || "⚠️ Network error. Please check your connection");
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
+
+const addItemToCart = async (marketID, quantity) => {
+  try {
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+      toast.error("⚠️ You need to be logged in to add items to your cart.");
+      return;
+    }
+
+    const numericMarketID = parseInt(marketID.split('-')[1],10);
+
+    const requestBody = {
+      token,
+      marketid: numericMarketID,
+      quantity,
+    };
+
+    const response = await fetch(`${API_BACKENDAPI_URL}/api/AddToCart`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    
+    console.log("API Response Status:", response.status); // Log the response status
+    const data = await response.json();
+    console.log("API AddToCart: ", data); // Log the response for debugging
+
+    if (data === "Added to cart") {
+      toast.success(`🎉 "${product.title}" has been added to your cart!`);
+      setCartItems((prevItems) => [...prevItems, { ...product, quantity }]);
+    } else if (data === "Market quantity is not enough") {
+      toast.error("⚠️ Not enough stock available.");
+    } else if (data === "You already added it on your cart.") {
+      toast.error("⚠️ You cannot add this item because you already have it.");
+    } else if (data === "Invalid user token") {
+      toast.error("⚠️ Invalid user token. Please sign in again.");
+    } else {
+      toast.error(`⚠️ Error: ${data}`);
+    }
+  } catch (error) {
+    console.error("⚠️ Error adding item to cart:", error);
+    toast.error("⚠️ Unable to add item to cart. Please try again.");
+  }
+};
   
+
+  // Wishlist Modal
   const handleWishlist = async () => {
     try {
+      if (wishlistItems.some(item => item.id === product.id)) {
+        throw new Error("⚠️ This product is already in your wishlist!");
+      }
+
+      setWishlistItems(prevItems => {
+        const updatedWishlist = [...prevItems, product];
+        sessionStorage.setItem("wishlistItems", JSON.stringify(updatedWishlist)); // Save to sessionStorage
+        return updatedWishlist;
+      });
+
       setShowModal(false); // Close the modal
       setTimeout(() => {
-        addToWishlist(product);  // Trigger the callback to add to wishlist
+        addToWishlist(product); // Trigger the callback to add to wishlist
         setShowWishlistModal(true);
         setTimeout(() => {
           setShowWishlistModal(false);
         }, 1000);
       }, 300);
     } catch (error) {
-      toast.error(error.message || " ⚠️ Something went wrong while adding to wishlist!");
+      toast.error(error.message || "⚠️ Something went wrong while adding to wishlist!");
     }
   };
   
   return (
     <>
-   <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="bg-white border border-gray-200 p-8 rounded-[30px] shadow-lg relative flex flex-col items-center w-80 h-auto cursor-pointer transition-all duration-300 hover:shadow-2xl"
-      onClick={handleCardClick}
-    >
+      {/* Product Card UI */}
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="w-[420px] bg-white border border-[#e5e7eb] p-4 rounded-2xl shadow-lg relative flex flex-col h-auto cursor-pointer transition-all duration-300 hover:shadow-2xl"
+        onClick={handleCardClick}
+      >
+        {/* Badge */}
+        {product.status && (
+          <div className="absolute z-10 w-[5em] text-center top-10 left-10 bg-[#007580] text-white px-3 py-1 rounded-lg text-base font-inter font-medium">
+            {product.status}
+          </div>
+        )}
 
-      {/* New Badge */}
-      <div className="absolute top-1/2 right-[-20px] transform -translate-y-1/2 rotate-90 bg-red-500 text-white text-base font-bold px-4 py-2 rounded-md">
-        New
-      </div>
+        {/* Image */}
+        <div className="mb-5 w-full h-[420px] overflow-hidden rounded-xl relative group">
+          <motion.img
+            src={product.image}
+            alt={product.title}
+            className="w-full h-[450px] object-cover"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+          />
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-black/30 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+          >
+            <EyeIcon className="w-12 h-12 text-white" />
+          </motion.div>
+        </div>
 
-      {/* Animated Product Image */}
-      <motion.img
-        src={product.image}
-        alt={product.title}
-        className="h-60 w-60 object-contain rounded-lg"
-        whileHover={{ scale: 1.05 }}
-        transition={{ duration: 0.3 }}
-      />
+        {/* Details */}
+        <div className="feature_content px-3">
+          <div className="flex items-center justify-between mb-5">
+            <h4 className="relative text-xl -top-5 left-3 text-[#007580] capitalize font-inter font-medium">
+              {product.title || "No Title"}
+            </h4>
+            <button
+              className="relative cursor-pointer text-sm top-5 bg-[#007580] h-[62px] w-[72px] rounded-lg flex items-center justify-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddToCart(); // Only call handleAddToCart
+                addItemToCart(product.marketID, product.quantity); // Call addItemToCart with the correct parameters                
+              }}
+            >
+              <ShoppingCart size="1.75rem" color="#fff" />
+            </button>
+          </div>
 
-      {/* Product Details */}
-      <div className="text-center mt-4">
-        <p className="text-red-500 font-bold text-2xl">${product.price}</p>
-        <p className="font-semibold text-gray-700 text-lg">{product.title}</p>
-        <p className="font-semibold text-gray-700 text-lg">{product.quantity + " available"}</p>
-        <p className="font-semibold text-gray-700 text-lg">{product.rating + " ★"}</p>
-      </div>
+          <p className="relative text-3xl -top-5 left-3 items-center gap-3 text-[#272343] font-bold font-inter">
+            ${product.price || "0"}
+            {product.currentPrice && (
+              <span className="text-lg text-[#9a9caa] font-inter font-normal line-through">
+                ${product.currentPrice}
+              </span>
+            )}
+          </p>
+        </div>
       </motion.div>
 
       {/* Product Modal Animation */}
@@ -103,7 +216,7 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
             animate={{ scale: 1 }}
             exit={{ scale: 0.8 }}
             className="bg-white p-10 rounded-2xl shadow-xl w-full md:w-[1200px] md:h-[550px] max-w-full relative flex flex-col md:flex-row overflow-hidden"
-            onAbort={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
         {/* Close Button */}
           <button
@@ -130,7 +243,7 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
                 <br></br>
             <div className="flex items-center space-x-2 mb-4">
               <span className="text-yellow-400 text-2xl font-semibold">
-                  {product.rating || "No user rate this product"}★ 
+                  {product.rating || "No user rate this product"}⭐ 
                     </span>
               <span className="text-gray-500 text-lg">
                    ({product.rating || "0"} user reviews)
@@ -142,7 +255,7 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
               </span>
                 <br></br>
               <span className="text-lg text-gray-700 mb-5">
-                <strong>Stock:</strong> {product.quantity + " available" || "Out of stock"}
+                <strong>Stock:</strong> {product.quantity ? `${product.quantity} available` : "Out of stock"}
               </span>
           </div>
 
@@ -152,28 +265,42 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="absolute left-0 bottom-6 w-[100px] h-[50px] bg-red-500 text-white flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-red-600 shadow-md"
+          className="absolute -left-2 -bottom-5 w-[100px] h-[60px] bg-red-500 text-white flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-red-600 shadow-md"
           onClick={handleWishlist}
+          
         >
           <Heart size={28} />
         </motion.button>
       {/* Add to Cart Button */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="absolute left-30 bottom-6 w-[100px] h-[50px] bg-orange-500 text-white flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-orange-600 shadow-md"
-          onClick={handleAddToCart}
-        >
-          <ShoppingCart size={28} />
-        </motion.button>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        disabled={isLoading}
+        className={`absolute left-27 -bottom-5 w-[100px] h-[60px] ${
+          isLoading ? "bg-gray-400" : "bg-orange-500"
+        } text-white flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-orange-600 shadow-md`}
+        onClick={(e) => {
+          handleAddToCart();
+          addItemToCart(product.marketID, product.quantity); // Call addItemToCart with the correct parameters                
+        }}
+      >
+        <ShoppingCart size={28} />
+      </motion.button>
       {/* Checkout Button */}
-        <motion.button
+      <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="absolute right-10 bottom-6 w-[300px] h-[50px] bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold transition-all duration-300 hover:bg-green-700 shadow-md"
+          className="absolute right-10 -bottom-5 w-[250px] h-[60px] bg-green-600 text-white py-4 px-8 rounded-xl text-lg font-semibold transition-all duration-300 hover:bg-green-700 shadow-md"
+          onClick={() => navigate("/checkout", {
+            state: {
+              cartItems: [product],
+              total: product.price * product.quantity
+            }
+          })}
         >
-      Buy Now
-                  </motion.button>
+          Buy Now
+        </motion.button>
+
                 </div>
               </div>
             </motion.div>

@@ -1,30 +1,33 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 //Package Icons
 import { Store, Search, ShoppingCart, User, Heart } from "lucide-react";
 //Installed Notification
 import { toast } from 'react-hot-toast';
+//useContext
+import { AppContext } from "../AppContext";
 
-const Navbar = ({ onSearch, cartItems = [], wishlistItems= [] }) => {
+const Navbar = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [username, setUsername] = useState(null);
   const navigate = useNavigate();
-
-  //Username Function
+  const { username, setUsername, cartItems, wishlistItems } = useContext(AppContext);
+  
+  
+  //Username on Account Function
   useEffect(() => {
     try {
       const storedUsername = sessionStorage.getItem("username");
-      if (storedUsername && typeof storedUsername === 'string') {
-      setUsername(storedUsername);
+      if (storedUsername && typeof storedUsername === "string") {
+        setUsername(storedUsername);
       } else {
         throw new Error(" ⚠️ Invalid session data.")
       }
     } catch (error) {
       setUsername(null);
-      toast.error(" ⚠️ Failed to retrieve your account please Sign in.")
+      toast.error(" ⚠️ Failed to retrieve your account. Please sign in again.")
     }
-  }, []);
+  }, [setUsername]);
 
   //Search bar function
   const handleSearch = (query) => {
@@ -36,23 +39,17 @@ const Navbar = ({ onSearch, cartItems = [], wishlistItems= [] }) => {
     }
   };
 
-  //Log out function
+  // Log out function
   const handleLogout = () => {
     try {
       sessionStorage.removeItem("username");
-      sessionStorage.removeItem("password");
-      sessionStorage.removeItem("token");
-      setUsername(null);
-      toast.success(" 🎉 Logged out successfully.", {
-        position: "top-center", 
-        autoClose: 3000, // auto close after 3 seconds
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-      });
-      navigate("/landingpage");
+      setUsername(null); // Clear username in context
+      toast.success("🎉 Logged out successfully. Redirecting to Landing page...");
+      setTimeout(() => {
+        navigate("/landingpage");
+      }, 1000);
     } catch (error) {
-        toast.error(" ⚠️ There was an issue logging you out. Please try again.")
+      toast.error("⚠️ There was an issue logging you out. Please try again.");
     }
   };
 
@@ -74,7 +71,7 @@ const Navbar = ({ onSearch, cartItems = [], wishlistItems= [] }) => {
       <div className="navbar_middle flex items-center justify-center bg-[#f0f2f3] h-[84px] w-full z-50 relative">
         <div className="lg:container flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <Link to="/landingpage" className="text-3xl flex items-center gap-2 font-mediu1m">
+            <Link to="/landingpage" className="text-3xl flex items-center gap-2 font-medium">
               <Store size='2rem' color="#029fae" /> 𝑭𝒂𝒌𝒆 𝑺𝒕𝒐𝒓𝒆
                 </Link>
               </div>
@@ -151,7 +148,7 @@ const Navbar = ({ onSearch, cartItems = [], wishlistItems= [] }) => {
             </>
             ) : (
               <li className="p-2 hover:bg-gray-100 cursor-pointer">
-                <Link to="/loginregister" className="block px-4 py-2 text-gray-700">SIGN UP</Link>
+                <Link to="/loginregister" className="block px-4 py-2 text-gray-700">SIGN IN</Link>
               </li>
             )}
           </ul>

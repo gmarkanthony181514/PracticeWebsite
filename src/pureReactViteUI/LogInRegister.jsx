@@ -152,7 +152,7 @@ const LogInRegister = () => {
     
     const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/;
     if (formData.password.length < 8 || !passwordRegex.test(formData.password)) {
-      showError(" ⚠️ Password didn't met all requirement.");
+      showError(" ⚠️ Password didn't appear to be strong enough. Please try again.");
       return;
     }
 
@@ -193,20 +193,21 @@ const LogInRegister = () => {
         password: formData.password
     });
 
-  const data = response.data?.[0];
+      const data = response.data?.[0];
 
     if (!data?.token) {
-      showError(" ⚠️ Login failed: No Token receive from server.");
+      showError(" ⚠️ Login failed: Incorrect username or password!");
         return;
     }
   
     //Saving Username & Token on Storage
     try {
-        sessionStorage.setItem('username', formData.username);
-        sessionStorage.setItem('token', data.token);
-
-        showSuccess(" 🎉 Login Successful! Redirecting...");
-        navigate('/marketplace');
+        sessionStorage.setItem("username", formData.username);
+        sessionStorage.setItem("token", data.token);
+        showSuccess(" 🎉 Login Successful! Redirecting to Marketplace...");
+        setTimeout(() => {
+          window.location.href = '/marketplace';
+        }, 1000);
     } catch (storageError) {
       showError(" ⚠️ Failed to save session data. Please check your browsing settings.");
     }

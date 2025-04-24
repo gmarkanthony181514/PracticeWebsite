@@ -5,28 +5,11 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap");
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body, input .sign-up-mode {
-  font-family: "Inter";
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-}
-
 
 .container {
   position: relative;
   width: 100%;
+  min-width: 100vw;
   background: 
   radial-gradient(circle at 30% 30%, #531a89 20%, transparent 60%),
   radial-gradient(circle at 25% 70%, #f7d091 20%, transparent 60%),
@@ -480,6 +463,7 @@ form.sign-in-form {
 
   .right-panel .image,
   .right-panel .content {
+
     transform: translateY(300px);
   }
 

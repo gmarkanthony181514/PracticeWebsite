@@ -2,6 +2,8 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '../tailwind.config.js';
+
 
 //pureReactViteUI folder imports
 import LandingPage from "./pureReactViteUI/LandingPage"; 
@@ -13,8 +15,8 @@ import NewsFeed from "./pages/NewsFeed";
 import Myaccount from "./pages/Myaccount";
 import Additem from "./pages/Additem";
 import AddtoCart from "./pages/AddtoCart";
-
-
+import Checkout from "./pages/Checkout";
+import Carousel from "./marketplace/Carousel";
 
 const App = () => {
   return (
@@ -25,8 +27,10 @@ const App = () => {
       <Route path="/marketplace" element={<MarketPlace />} />
       <Route path="/myaccount" element={<Myaccount />} />
       <Route path="/additem" element={<Additem />} />
+      <Route path="/checkout" element={<Checkout />} />
       <Route path="/addtocart" element={<AddtoCart />} />
       <Route path="/newsfeed" element={<NewsFeed />} />
+      <Route path="/carousel" element={<Carousel />} />
     </Routes>
   );
 
