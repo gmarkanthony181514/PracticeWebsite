@@ -12,7 +12,7 @@ export default {
         "pulse-slow": "pulseSlow 2s ease-in-out infinite",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"], // Inter as default for sans-serif
+        sans: ["Inter", "sans-serif"],
       },
     },
   },

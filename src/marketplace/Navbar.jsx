@@ -137,7 +137,7 @@ const Navbar = ({ onSearch }) => {
             {username ? (
               <>
             <li className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100">
-              <Link to="/myaccount" className="block px-4 py-2 text-gray-700">View Account</Link>
+              <Link to="/carousel" className="block px-4 py-2 text-gray-700">View Account</Link>
             </li>
             <li className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100">
               <Link to="/additem" className="block px-4 py-2 text-gray-700">Add Item</Link>

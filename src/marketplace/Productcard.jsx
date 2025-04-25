@@ -73,7 +73,7 @@ const addItemToCart = async (marketID, quantity) => {
       return;
     }
 
-    const numericMarketID = parseInt(marketID.split('-')[1],10);
+    const numericMarketID = parseInt(marketID);
 
     const requestBody = {
       token,
@@ -196,6 +196,7 @@ const addItemToCart = async (marketID, quantity) => {
               <span className="text-lg text-[#9a9caa] font-inter font-normal line-through">
                 ${product.currentPrice}
               </span>
+              
             )}
           </p>
         </div>
