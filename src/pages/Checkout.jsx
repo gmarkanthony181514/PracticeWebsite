@@ -171,10 +171,91 @@ const Checkout = () => {
   };
 
 
-
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-[#c9e5e9] to-[#ccddf9] px-4 py-8">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-[#c9e5e9] to-[#ccddf9] px-4 py-8">
       <div className="flex flex-col md:flex-row w-full max-w-[1400px] bg-white rounded-[30px] shadow-[0px_15px_50px_10px_rgba(0,0,0,0.2)] overflow-hidden h-full">
+
+      {/* Shipping Details Section */}
+    <div className="flex flex-col w-full md:w-1/2 h-full p-12 space-y-6">
+      <h2 className="text-center text-xl font-semibold">Add Shipping Details</h2>
+      <div className="w-full h-px bg-gray-300"></div>
+      <form className="space-y-4">
+
+
+    {/* Shipping Country Dropdown */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700"> Payment Methods:</label>
+      <select
+        className="w-full border border-gray-300 rounded-lg p-3"
+        defaultValue="XurePay"
+      >
+        <option value="XurePay Balance"> XurePay </option>
+        <option value="G-Cash"> G-Cash </option>
+        <option value="credit Card"> Credit Card </option>
+        <option value="E-Wallet"> E-Wallet </option>
+      </select>
+    </div>
+
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="First Name"
+          className="w-full border border-gray-300 rounded-lg p-3"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Last Name"
+          className="w-full border border-gray-300 rounded-lg p-3"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Mobile Number (For delivery call)"
+          className="w-full border border-gray-300 rounded-lg p-3"
+          required
+        />
+            <input
+          type="text"
+          placeholder="Street/Building Name"
+          className="w-full border border-gray-300 rounded-lg p-3"
+          required
+        />  
+        <input
+          type="text"
+          placeholder="Region/City/District"
+          className="w-full border border-gray-300 rounded-lg p-3"
+          required
+        />
+      </div>
+    </div>
+
+        {/* Buy Now Button with Terms */}
+    <div className="mt-6 text-center">
+      <p className="text-sm text-gray-600">
+        By saving your information, you agree to our{" "}
+        <a href="#" className="text-blue-600 underline">
+          Terms & Conditions
+        </a>
+        ,{" "}
+        <a href="#" className="text-blue-600 underline">
+          Privacy Policy
+        </a>
+        , and{" "}
+        <a href="#" className="text-blue-600 underline">
+          Returns Policy
+        </a>
+        .
+      </p>
+      <button
+        className="w-full bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition text-lg mt-4"
+      >
+        Save
+      </button>
+    </div>
+      </form>
+    </div>
 
         {/* Order Summary Section (50% width) */}
         <div className="flex flex-col justify-center w-full md:w-1/2 h-full p-12 space-y-6">
@@ -216,7 +297,7 @@ const Checkout = () => {
           <button 
             onClick={handlePlaceOrder}
             disabled={isLoading}
-            className="w-full bg-white text-blue-600 py-4 rounded-xl font-bold hover:bg-gray-100 transition text-lg"
+             className="w-full bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition text-lg mt-4"
           >
             {isLoading ? 'Processing...' : 'Place Order'}
           </button>
@@ -234,23 +315,6 @@ const Checkout = () => {
           >
             {isLoading ? 'Loading...' : 'View Transaction History'}
           </button>
-        </div>
-
-        {/* Google Map Section (50% width) */}
-        <div className="w-full md:w-1/2 mt-4 md:mt-0 p-4 flex-1">
-          <p className="text-sm text-gray-600 mb-2">Delivery Address Location:</p>
-          <div className="rounded-lg overflow-hidden h-full">
-            <iframe
-              title="Google Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1930.6366264600496!2d120.9842194928566!3d14.599512379105352!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397ca22a5e19121%3A0x5515d1cf47b41e99!2sManila%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1713084170293!5m2!1sen!2sph"
-              width="100%"
-              height="100%"
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full border-0 rounded-lg"
-            ></iframe>
-          </div>
         </div>
       </div>
 
