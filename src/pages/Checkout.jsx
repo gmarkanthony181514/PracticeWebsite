@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { API_BACKENDAPI_URL, API_FAKESTORE_URL } from '../../varConstant';
+import { API_BACKENDAPI_URL } from '../../varConstant';
 
 const Checkout = () => {
   const location = useLocation();
@@ -10,10 +10,12 @@ const Checkout = () => {
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [showTransactionHistory, setShowTransactionHistory] = useState(false);
   const deliveryFee = 9.99;
-  const vat = total * 0.09;
+  const vat = total * 0.00;
   const grandTotal = total + vat + deliveryFee;
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('customerDetails');
 
+  
   const getSessionData = () => {
     const token = sessionStorage.getItem("token");
     const cartSession = sessionStorage.getItem("cartSessionId");
@@ -24,7 +26,7 @@ const Checkout = () => {
     }
   
     if (!cartSession || cartSession === "No ID") {
-      toast.error("⚠️ Invalid cart session. Please try again.");
+      toast.error("⚠️ Invalid cart session ID detected.");
       return null;
     }
   
@@ -177,7 +179,7 @@ const Checkout = () => {
 
       {/* Shipping Details Section */}
     <div className="flex flex-col w-full md:w-1/2 h-full p-12 space-y-6">
-      <h2 className="text-center text-xl font-semibold">Add Shipping Details</h2>
+      <h2 className="text-center text-xl font-semibold">CHECKOUT</h2>
       <div className="w-full h-px bg-gray-300"></div>
       <form className="space-y-4">
 
@@ -198,37 +200,76 @@ const Checkout = () => {
 
     <div className="space-y-4">
       <div className="space-y-2">
-        <input
-          type="text"
-          placeholder="First Name"
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Last Name"
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Mobile Number (For delivery call)"
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
-            <input
-          type="text"
-          placeholder="Street/Building Name"
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />  
-        <input
-          type="text"
-          placeholder="Region/City/District"
-          className="w-full border border-gray-300 rounded-lg p-3"
-          required
-        />
+
+        {/* Delivery Address Tabs */}
+      <div className="flex justify-between border-b border-gray-300 mb-4">
+        <button
+          className={`w-1/2 py-3 text-center font-medium ${
+            activeTab === 'customerDetails' ? 'text-gray-700 border-b-2 border-black' : 'text-gray-500'
+          }`}
+          onClick={() => setActiveTab('customerDetails')}
+        >
+          Customer Details
+        </button>
+        <button
+          className={`w-1/2 py-3 text-center font-medium ${
+            activeTab === 'shippingAddress' ? 'text-gray-700 border-b-2 border-black' : 'text-gray-500'
+          }`}
+          onClick={() => setActiveTab('shippingAddress')}
+        >
+          Shipping Address
+        </button>
       </div>
+        
+      {/* Conditionally Render Fields Based on Active Tab */}
+      {activeTab === 'customerDetails' && (
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="First Name"
+            className="w-full border border-gray-300 rounded-lg p-3"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Last Name"
+            className="w-full border border-gray-300 rounded-lg p-3"
+            required
+          />
+          <div className="relative">
+            <span className="absolute left-3 top-3 text-gray-500">+63</span>
+            <input
+              type="text"
+              placeholder="Mobile Number"
+              className="w-full border border-gray-300 rounded-lg p-3 pl-12"
+              required
+            />
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'shippingAddress' && (
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Street/Building Name"
+            className="w-full border border-gray-300 rounded-lg p-3"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Region/City/District"
+            className="w-full border border-gray-300 rounded-lg p-3"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Building Unit/Floor (Optional)"
+            className="w-full border border-gray-300 rounded-lg p-3"
+          />
+        </div>
+      )}
+    </div>
     </div>
 
         {/* Buy Now Button with Terms */}
@@ -248,11 +289,13 @@ const Checkout = () => {
         </a>
         .
       </p>
-      <button
-        className="w-full bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition text-lg mt-4"
-      >
-        Save
-      </button>
+      <button 
+            onClick={handlePlaceOrder}
+            disabled={isLoading}
+             className="w-full bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition text-lg mt-4"
+          >
+            {isLoading ? 'Processing...' : 'Place Order'}
+          </button>
     </div>
       </form>
     </div>
@@ -266,7 +309,7 @@ const Checkout = () => {
             cartItems.map((item, index) => (
               <div key={`${item.marketID}-${index}`} className="w-full space-y-2">
                 <div className="flex">
-                  <img src={item.image || "https://via.placeholder.com/150"} alt={item.title} className="w-[30%] rounded" />
+                  <img src={item.image || "default-image.jpg"} alt={item.title} className="w-[30%] rounded" />
                   <div className="pl-4">
                     <p className="font-medium text-lg">{item.title}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
@@ -284,8 +327,8 @@ const Checkout = () => {
 
           <div className="flex justify-between text-sm text-gray-600 pt-2">
             <div className="space-y-1">
-              <p className="font-medium">VAT 12%</p>
-              <p className="font-medium">Delivery</p>
+              <p className="font-medium">Subtotal w/ VAT 12%</p>
+              <p className="font-medium">Delivery Charge</p>
               <p className="font-medium text-lg">TOTAL</p>
             </div>
             <div className="text-right space-y-1">
@@ -294,13 +337,6 @@ const Checkout = () => {
               <p className="font-bold text-xl text-black">${grandTotal.toFixed(2)}</p>
             </div>
           </div>
-          <button 
-            onClick={handlePlaceOrder}
-            disabled={isLoading}
-             className="w-full bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition text-lg mt-4"
-          >
-            {isLoading ? 'Processing...' : 'Place Order'}
-          </button>
           <button 
             onClick={handleCancelOrder}
             disabled={isLoading}

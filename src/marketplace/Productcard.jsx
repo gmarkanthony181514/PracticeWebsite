@@ -2,9 +2,9 @@ import React, { useState, useContext} from "react";
 import { useNavigate } from 'react-router-dom';
 //Animation Design
 import { motion, AnimatePresence } from "framer-motion";
-//Package Icons
+//Package UI Icons
 import { ShoppingCart, Heart, EyeIcon } from "lucide-react";
-//Installed Notification
+//Installed Notification for Error Handling
 import { toast } from 'react-hot-toast';
 //Importing useContext
 import { AppContext } from "../AppContext";
@@ -17,23 +17,23 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
   const [showWishlistModal, setShowWishlistModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
+  //useContext for removing cartItems, setCartItems duplication
   const { cartItems, setCartItems, wishlistItems, setWishlistItems } = useContext(AppContext);
   
-  
-  //Product Card click Handler
+  //For Modal Card
   const handleCardClick = () => {
     setShowModal(true);
   };
   
-  //Add to Cart Modal
+  //For Add to Cart Function
   const handleAddToCart = async () => {
     try {
       setIsLoading(true);
   
+      //Checking if user sign in first before add to cart function works
       const isUserLoggedIn = !!sessionStorage.getItem("token");
       if (!isUserLoggedIn) {
-        toast.error("⚠️ You need to be logged in to add items to your cart.");
+        toast.error("⚠️ Sign in first before adding product into cart.");
         return;
       }
   
@@ -65,16 +65,16 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
     }
   };
 
+//API AddToCart and Error Handling
 const addItemToCart = async (marketID, quantity) => {
   try {
     const token = sessionStorage.getItem("token");
     if (!token) {
-      toast.error("⚠️ You need to be logged in to add items to your cart.");
+      toast.error("⚠️ You have no access here... Sign in first! ");
       return;
     }
 
     const numericMarketID = parseInt(marketID);
-
     const requestBody = {
       token,
       marketid: numericMarketID,
@@ -89,13 +89,12 @@ const addItemToCart = async (marketID, quantity) => {
       body: JSON.stringify(requestBody),
     });
 
-    
-    console.log("API Response Status:", response.status); // Log the response status
+    console.log("API Response Status:", response.status);
     const data = await response.json();
-    console.log("API AddToCart: ", data); // Log the response for debugging
+    console.log("API AddToCart: ", data);
 
     if (data === "Added to cart") {
-      toast.success(`🎉 "${product.title}" has been added to your cart!`);
+      toast.success(`🎉 Your "${product.title}" has been added to your cart!`);
       setCartItems((prevItems) => [...prevItems, { ...product, quantity }]);
     } else if (data === "Market quantity is not enough") {
       toast.error("⚠️ Not enough stock available.");

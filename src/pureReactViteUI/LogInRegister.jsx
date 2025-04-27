@@ -8,8 +8,8 @@ import { toast } from 'react-hot-toast';
 //Imported Files & Images
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../pureCSSfiles/LogInRegister.css';
-import logoImg from "../assets/images/logImg.svg";
-import registerImg from "../assets/images/registerImg.svg";
+import logoImg from "../assets/images/landingSignUP/logImg.svg";
+import registerImg from "../assets/images/landingSignUP/registerImg.svg";
 
 const LogInRegister = () => {
   const [isSignUpMode, setIsSignUpMode] = useState(false);

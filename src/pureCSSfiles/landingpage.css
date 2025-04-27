@@ -66,6 +66,11 @@
   color: #f7d091;
 }
 
+.xure-image img {
+  max-width: 100%;
+  height: auto;
+}
+
 .xure-btn {
   position: relative;
   display: inline-block;

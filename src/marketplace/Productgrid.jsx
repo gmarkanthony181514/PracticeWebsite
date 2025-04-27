@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 //Importing Files
 import ProductCard from "./Productcard";
+import Carousel from "../CarouselDesign/Carousel";
 //BackEnd Calling
 import {API_BACKENDAPI_URL } from '../../varConstant';
 //Installed Notification
@@ -16,7 +17,6 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
   const noMatchToastShown = useRef(false);
 
   const { cartItems, setCartItems, wishlistItems, setWishlistItems } = useContext(AppContext);
-
 
   // Fetching Products
   const fetchProducts = async () => {
@@ -169,7 +169,9 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
   
 
   return (
+
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
+      <Carousel />
       <br />
       <div className="grid grid-cols-10 md:grid-cols-3 gap-10 p-4">
         {displayedProducts.length > 0 ? (
@@ -182,7 +184,7 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
             />
           ))
         ) : (
-          <p className="col-span-4 text-center text-gray-500">No products found.</p>
+          <p className="col-span-4 text-center text-gray-500">No products available.</p>
         )}
       </div>
     </div>

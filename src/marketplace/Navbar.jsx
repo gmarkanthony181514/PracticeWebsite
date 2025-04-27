@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-//Package Icons
-import { Store, Search, ShoppingCart, User, Heart } from "lucide-react";
-//Installed Notification
+//Package UI Icons
+import { Search, ShoppingCart, User, Heart } from "lucide-react";
+//Installed Notification for Error Handling
 import { toast } from 'react-hot-toast';
 //useContext
 import { AppContext } from "../AppContext";
@@ -11,8 +11,8 @@ const Navbar = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const navigate = useNavigate();
+  //useContext for cartItems purpose (removing duplication error)
   const { username, setUsername, cartItems, wishlistItems } = useContext(AppContext);
-  
   
   //Username on Account Function
   useEffect(() => {
@@ -21,11 +21,11 @@ const Navbar = ({ onSearch }) => {
       if (storedUsername && typeof storedUsername === "string") {
         setUsername(storedUsername);
       } else {
-        throw new Error(" ⚠️ Invalid session data.")
+        throw new Error(" ⚠️ Slow connection detected!")
       }
     } catch (error) {
       setUsername(null);
-      toast.error(" ⚠️ Failed to retrieve your account. Please sign in again.")
+      toast.error(" ⚠️ Connection error! ")
     }
   }, [setUsername]);
 
@@ -35,7 +35,7 @@ const Navbar = ({ onSearch }) => {
       setSearchQuery(query);
       onSearch(query);
     } catch (error) {
-        toast.error(" ⚠️ There was an issue with your search. Please try again.");
+        toast.error(" ⚠️ Slow connection detected! ");
     }
   };
 
@@ -43,13 +43,13 @@ const Navbar = ({ onSearch }) => {
   const handleLogout = () => {
     try {
       sessionStorage.removeItem("username");
-      setUsername(null); // Clear username in context
-      toast.success("🎉 Logged out successfully. Redirecting to Landing page...");
+      setUsername(null);
+      toast.success("🎉 Your account has been sign out! Redirecting to Landing Page...");
       setTimeout(() => {
         navigate("/landingpage");
       }, 1000);
     } catch (error) {
-      toast.error("⚠️ There was an issue logging you out. Please try again.");
+      toast.error("⚠️ Connection error! Please wait...");
     }
   };
 
@@ -69,16 +69,18 @@ const Navbar = ({ onSearch }) => {
   return (
     <div>
       <div className="navbar_middle flex items-center justify-center bg-[#f0f2f3] h-[84px] w-full z-50 relative">
-        <div className="lg:container flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <Link to="/landingpage" className="text-3xl flex items-center gap-2 font-medium">
-              <Store size='2rem' color="#029fae" /> 𝑭𝒂𝒌𝒆 𝑺𝒕𝒐𝒓𝒆
-                </Link>
-              </div>
+          <div className="lg:container flex justify-between items-center">
+              <div className="flex items-center gap-6">
+            <Link
+              to="/landingpage"
+               className="text-3xl flex items-center gap-2 font-medium">
+               𝑭𝒂𝒌𝒆 𝑺𝒕𝒐𝒓𝒆
+            </Link>
+          </div>
             <div className="relative w-1/3">
               <input
                 type="text"
-                  placeholder="   Search products..."
+                  placeholder="   Search products here..."
                     className="w-full h-[44px] pl-6 pr-10 py-2 rounded-lg shadow-md"
                       value={searchQuery}
                         onChange={(e) => handleSearch(e.target.value)}
@@ -89,14 +91,16 @@ const Navbar = ({ onSearch }) => {
                     try {
                       handleSearch(searchQuery);
                         } catch (error) {
-                          toast.error(" ⚠️ There was an issue with your search. Please try again.");
+                          toast.error(" ⚠️ Slow connection detected...");
                         }
                       }}>
                   <Search size='22px' color="#272343" />
               </button>
            </div>
         <div className="relative">
-          <Link to="/addtocart" className="relative flex items-center gap-2">
+          <Link 
+            to="/addtocart" 
+              className="relative flex items-center gap-2">
             <div className="relative">
               <ShoppingCart size={24} />
               {cartItems.length > 0 && (
@@ -109,7 +113,9 @@ const Navbar = ({ onSearch }) => {
           </Link>
         </div>
       <div className="relative">
-          <Link to="/wishlist" className="relative flex items-center gap-2">
+          <Link 
+            to="/wishlist" 
+              className="relative flex items-center gap-2">
             <div className="relative">
               <Heart size={24} />
                 {wishlistItems.length > 0 && (
@@ -137,18 +143,35 @@ const Navbar = ({ onSearch }) => {
             {username ? (
               <>
             <li className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100">
-              <Link to="/carousel" className="block px-4 py-2 text-gray-700">View Account</Link>
+              <Link 
+                to="/carousel" 
+                  className="block px-4 py-2 text-gray-700">
+                    View Account
+              </Link>
             </li>
             <li className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100">
-              <Link to="/additem" className="block px-4 py-2 text-gray-700">Add Item</Link>
+              <Link 
+                to="/additem" 
+                  className="block px-4 py-2 text-gray-700">
+                    Add Item
+              </Link>
             </li>
-            <li className="p-2 hover:bg-red-100 cursor-pointer" onClick={handleLogout}>
-              <button className="block w-full text-left px-4 py-2 text-red-500">Logout</button>
+            <li 
+              className="p-2 hover:bg-red-100 cursor-pointer"
+               onClick={handleLogout}>
+              <button 
+                className="block w-full text-left px-4 py-2 text-red-500">
+                  Logout
+              </button>
             </li>
             </>
             ) : (
               <li className="p-2 hover:bg-gray-100 cursor-pointer">
-                <Link to="/loginregister" className="block px-4 py-2 text-gray-700">SIGN IN</Link>
+                <Link 
+                  to="/loginregister" 
+                    className="block px-4 py-2 text-gray-700">
+                      SIGN IN
+                </Link>
               </li>
             )}
           </ul>
@@ -159,4 +182,6 @@ const Navbar = ({ onSearch }) => {
 </div>
   );
     };
+
+
 export default Navbar;

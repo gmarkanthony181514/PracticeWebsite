@@ -1,5 +1,5 @@
-import equilibriumImg from '../assets/images/eventDetails.svg';
-import avatarImg from '../assets/images/eventDetails.svg';
+import equilibriumImg from '../assets/images/landingSignUP/eventDetails.svg';
+import avatarImg from '../assets/images/landingSignUP/eventDetails.svg';
 import { EyeIcon, ClockIcon } from 'lucide-react';
 
 export default function NFTCard() {

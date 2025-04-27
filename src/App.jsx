@@ -3,20 +3,17 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../tailwind.config.js';
-
-
-//pureReactViteUI folder imports
+//pureReactViteUI Imports
 import LandingPage from "./pureReactViteUI/LandingPage"; 
 import LogInRegister from "./pureReactViteUI/LogInRegister"; 
-
-//Pages folder Import
+//Pages Import
 import MarketPlace from "./pages/MarketPage";  
 import NewsFeed from "./pages/NewsFeed";
 import Myaccount from "./pages/Myaccount";
 import Additem from "./pages/Additem";
 import AddtoCart from "./pages/AddtoCart";
 import Checkout from "./pages/Checkout";
-import Carousel from "./marketplace/Carousel";
+import Carousel from "./CarouselDesign/Carousel";
 
 const App = () => {
   return (

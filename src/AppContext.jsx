@@ -4,9 +4,9 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [companyName, setCompanyName] = useState("API Fake Store");
-  const [username, setUsername] = useState(null); // Add username state
-  const [cartItems, setCartItems] = useState([]); // Add cartItems state
-  const [wishlistItems, setWishlistItems] = useState([]); // Add wishlistItems state
+  const [username, setUsername] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
 
 
   return (

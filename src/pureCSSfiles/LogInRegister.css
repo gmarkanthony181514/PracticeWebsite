@@ -11,22 +11,21 @@
   width: 100%;
   min-width: 100vw;
   background: 
-  radial-gradient(circle at 30% 30%, #531a89 20%, transparent 60%),
-  radial-gradient(circle at 25% 70%, #f7d091 20%, transparent 60%),
-  radial-gradient(circle at 50% 50%, #f7d09180 20%, #531a8980 70%);
+    radial-gradient(circle at 30% 30%, #3a0ca3 25%, transparent 60%), /* Vibrant blue-purple */
+    radial-gradient(circle at 25% 70%, #ffba08 25%, transparent 60%), /* Bright gold */
+    radial-gradient(circle at 50% 50%, #3a0ca380 25% 70%); /* Darker purple with transparency */
   background-blend-mode: screen;
   min-height: 100vh;
   overflow: hidden;
-  
 }
 
 .container.sign-up-mode {
   position: relative;
   width: 100%;
   background: 
-  radial-gradient(circle at 70% 60%, #f7d091 20%, transparent 60%),
-  radial-gradient(circle at 70% 70%, #531a8980 20%, transparent 60%),
-  radial-gradient(circle at 50% 50%, #531a8980 20%, #531a8980 70%);
+    radial-gradient(circle at 80% 80%, #ffba08 25%, transparent 60%), /* Bright gold */
+    radial-gradient(circle at 70% 70%, #3a0ca380 25%, transparent 60%), /* Vibrant blue-purple */
+    radial-gradient(circle at 50% 50%, #3a0ca380 25% 70%); /* Deep purple */
   background-blend-mode: screen;
   min-height: 100vh;
   overflow: hidden;

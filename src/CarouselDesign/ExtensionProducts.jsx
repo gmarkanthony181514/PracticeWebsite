@@ -1,8 +1,23 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+//Package UI Import
 import { Star } from 'lucide-react';
+//Importing Files
 import CountdownTimer from './CountdownTimer';
 
 const ExtensionProducts = ({ product }) => {
+  const navigate = useNavigate();
+
+  //Button for navigating Checkout for Live Selling Cards (UI Only)
+  const handleBuyNow = (product) => {
+    navigate("/checkout", {
+      state: {
+        cartItems: [product],
+        total: product.price,
+      },
+    });
+  };
+
   return (
     <div className="group relative p-4 rounded-2xl 
         bg-gradient-to-br from-gray-800/60 to-black/40 backdrop-blur-lg
@@ -11,10 +26,14 @@ const ExtensionProducts = ({ product }) => {
       {product.isLive && (
         <div className="absolute top-5 right-7 flex items-center gap-2 z-40">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75">
+            </span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
           </span>
-          <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">LIVE</span>
+          <span 
+            className="bg-red-600 text-white text-xs px-2 py-1 rounded">
+              LIVE
+          </span>
         </div>
       )}
 
@@ -37,7 +56,7 @@ const ExtensionProducts = ({ product }) => {
 
       {product.isLive && (
         <div className="mt-2 text-sm text-white">
-          <p>Time Left: <CountdownTimer endTime={product.endTime} /></p>
+          <p>Ending live in: <CountdownTimer endTime={product.endTime} /></p>
         </div>
       )}
 
@@ -54,7 +73,9 @@ const ExtensionProducts = ({ product }) => {
       <span className="text-lg text-green-400 font-semibold transition-transform duration-200 hover:scale-110 hover:text-green-300">
           ${product.price}
         </span>
-        <button className="opacity-0 group-hover:opacity-100
+        <button 
+        onClick={() => handleBuyNow(product)}
+        className="opacity-0 group-hover:opacity-100
                      bg-gradient-to-r from-purple-600 to-pink-600
                      text-white px-3 py-1 rounded-full text-sm
                      transition-transform duration-200 hover:scale-105
