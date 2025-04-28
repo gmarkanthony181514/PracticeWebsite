@@ -11,6 +11,7 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
   const [localProducts, setLocalProducts] = useState([]);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [visibleProducts, setVisibleProducts] = useState(11);
   const [newProduct, setNewProduct] = useState({
     token: "",
     title: "",
@@ -58,7 +59,7 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
             quantity: parseInt(item.Quantity) || 0,
             price: parseFloat(item.price) || 0,
             image: item.Image || "default-image.svg",
-            rating: item.Rating || 0,
+            status: item.Status,
           }));
           setLocalProducts(mappedProducts);
         } else {
@@ -95,7 +96,7 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
         brand: newProduct.title,
         model: newProduct.description,
         quantity: parseInt(newProduct.quantity),
-        image: newProduct.image || "default-image.svg",
+        image: newProduct.image || "default-image.jpg",
         price: parseFloat(newProduct.price),
       };
 
@@ -151,7 +152,7 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
       };
 
       if (productToList.price <= 0) {
-        toast.error("⚠️ Price must be greater than 0.");
+        toast.error("⚠️ Price must be not 0.");
         return;
       }
   
@@ -228,11 +229,15 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
     }
   };
 
+  const handleLoadMore = () => {
+    setVisibleProducts((prevVisible) => prevVisible + 11);
+  };
+
   return (
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
       <SectionTitle title="My Items" mb="mb-11" />
       <br />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
         <div
           className="flex flex-col items-center justify-center border-2 border-dashed border-gray-400 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-all duration-200 h-[300px]"
           onClick={() => setShowAddItemModal(true)}
@@ -240,10 +245,10 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
           <div className="text-6xl text-gray-400">+</div>
           <p className="mt-2 text-gray-600">Add New Item</p>
         </div>
-        {localProducts.map((product, index) => (
-          <div key={product.marketID || `local-${index}`}>
+        {localProducts.map((product) => (
+          <div key={product.marketID}>
             <ProductCard
-              product={product}
+                product={{ ...product, status: product.status }}
               addToCart={addToCart}
               addToWishlist={(item) => toast.success(`Added ${item.title} to wishlist!`)}
             />
@@ -264,14 +269,31 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
           </div>
         ))}
       </div>
+
+        {visibleProducts < localProducts.length && (
+    <>
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={handleLoadMore}
+          className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all"
+        >
+          Load More
+        </button>
+      </div>
+      <p className="text-white text-center mt-2">
+        Debug: visibleProducts = {visibleProducts}, localProducts.length = {localProducts.length}
+      </p>
+    </>
+  )}
+
       {showAddItemModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-6">
-          <div className="bg-gray-900 text-white p-8 rounded-2xl shadow-xl w-full md:w-[1000px] max-w-full relative">
+          <div className="bg-gray-900 text-white p-8 rounded-2xl shadow-xl w-full md:w-[800px] max-w-full relative">
             <button
               className="absolute top-4 right-6 text-gray-400 text-4xl font-bold hover:text-gray-200"
               onClick={() => setShowAddItemModal(false)}
             >
-              &times;
+              &times; 
             </button>
             <h2 className="text-3xl font-bold text-white mb-6">Create New Product</h2>
             <form className="flex flex-col md:flex-row gap-8">

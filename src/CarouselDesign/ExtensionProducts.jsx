@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star } from 'lucide-react';
 //Importing Files
 import CountdownTimer from './CountdownTimer';
+import CarouselCard from "./CarouselCard";
 
 const ExtensionProducts = ({ product }) => {
   const navigate = useNavigate();

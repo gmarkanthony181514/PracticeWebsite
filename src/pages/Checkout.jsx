@@ -143,7 +143,7 @@ const Checkout = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BACKENDAPI_URL}/ViewTransactionHistory`, {
+      const response = await fetch(`${API_BACKENDAPI_URL}/api/ViewTransactionHistory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -275,7 +275,7 @@ const Checkout = () => {
         {/* Buy Now Button with Terms */}
     <div className="mt-6 text-center">
       <p className="text-sm text-gray-600">
-        By saving your information, you agree to our{" "}
+        By filling up your information, you agree to our{" "}
         <a href="#" className="text-blue-600 underline">
           Terms & Conditions
         </a>
