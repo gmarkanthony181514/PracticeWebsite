@@ -9,7 +9,7 @@ import LogInRegister from "./pureReactViteUI/LogInRegister";
 //Pages Import
 import MarketPlace from "./pages/MarketPage";  
 import NewsFeed from "./pages/NewsFeed";
-import Myaccount from "./pages/Myaccount";
+import Viewaccount from "./pages/Viewaccount";
 import Additem from "./pages/Additem";
 import AddtoCart from "./pages/AddtoCart";
 import Checkout from "./pages/Checkout";
@@ -22,7 +22,7 @@ const App = () => {
       <Route path="/landingpage" element={<LandingPage />} />
       <Route path="/loginregister" element={<LogInRegister />} />
       <Route path="/marketplace" element={<MarketPlace />} />
-      <Route path="/myaccount" element={<Myaccount />} />
+      <Route path="/viewaccount" element={<Viewaccount />} />
       <Route path="/additem" element={<Additem />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/addtocart" element={<AddtoCart />} />
