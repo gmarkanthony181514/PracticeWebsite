@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+//Importing files
+import Alertmessage from "../Alertmessage";
 //Package UI Icons
 import { Search, ShoppingCart, User, Heart } from "lucide-react";
 //Installed Notification for Error Handling
@@ -10,6 +12,7 @@ import { AppContext } from "../AppContext";
 const Navbar = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [showSignoutConfirm, setShowSignoutConfirm] = useState(false);
   const navigate = useNavigate();
   //useContext for cartItems purpose (removing duplication error)
   const { username, setUsername, cartItems, wishlistItems } = useContext(AppContext);
@@ -41,6 +44,10 @@ const Navbar = ({ onSearch }) => {
 
   // Log out function
   const handleLogout = () => {
+    setShowSignoutConfirm(true);
+  };
+
+  const confirmSignout = () => { 
     try {
       sessionStorage.removeItem("username");
       setUsername(null);
@@ -50,7 +57,13 @@ const Navbar = ({ onSearch }) => {
       }, 1000);
     } catch (error) {
       toast.error("⚠️ Connection error! Please wait...");
+    } finally {
+      setShowSignoutConfirm(false);
     }
+  };
+
+  const cancelSignout = () => {
+    setShowSignoutConfirm(false);
   };
 
   //Dropdown Function
@@ -178,6 +191,15 @@ const Navbar = ({ onSearch }) => {
         )}
       </div>
     </div>
+          {/* Alertmessage Component */}
+          {showSignoutConfirm && (
+        <Alertmessage
+          title="Confirm sign out"
+          message="Are you sure you want to sign out?"
+          onConfirm={confirmSignout}
+          onCancel={cancelSignout}
+        />
+      )}
   </div>
 </div>
   );

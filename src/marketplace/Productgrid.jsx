@@ -39,9 +39,9 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
   
-      console.log("View Market Response", response.status); // Log the response status
+      console.log("View Market Response", response.status);
       const data = await response.json();
-      console.log(data); // Log the response data
+      console.log(data);
 
 
       if (data === "No Data") {
