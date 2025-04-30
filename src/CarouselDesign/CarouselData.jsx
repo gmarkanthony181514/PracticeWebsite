@@ -15,7 +15,6 @@ import Latios from "../assets/images/carousel/Latios.jpg";
 import Rayquaza from "../assets/images/carousel/Rayquaza.jpg";
 import Raichu from "../assets/images/carousel/Raichu.jpg";
 
-
 // Limited Edition Cards Component Slideshow Design (NO API)
 export const limitedEdition = [
     {

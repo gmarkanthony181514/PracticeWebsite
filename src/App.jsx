@@ -14,6 +14,11 @@ import Additem from "./pages/Additem";
 import AddtoCart from "./pages/AddtoCart";
 import Checkout from "./pages/Checkout";
 import Carousel from "./CarouselDesign/Carousel";
+//Footer Pages
+import AboutUs from "./FooterPages/AboutUs";
+import Contact from "./FooterPages/Contact";
+import PrivacyPolicy from "./FooterPages/PrivacyPolicy";
+
 
 const App = () => {
   return (
@@ -28,6 +33,9 @@ const App = () => {
       <Route path="/addtocart" element={<AddtoCart />} />
       <Route path="/newsfeed" element={<NewsFeed />} />
       <Route path="/carousel" element={<Carousel />} />
+      <Route path="/aboutus" element={<AboutUs />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/privacypolicy" element={<PrivacyPolicy />} />
     </Routes>
   );
 

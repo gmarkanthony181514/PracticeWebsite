@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 //Importing files
-import Alertmessage from "../Alertmessage";
+import Alertmessage from "../AlertModalNotif/Alertmessage";
 //Package UI Icons
 import { Search, ShoppingCart, User, Heart } from "lucide-react";
 //Installed Notification for Error Handling

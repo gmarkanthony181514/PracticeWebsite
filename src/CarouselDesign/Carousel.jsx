@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 //Package UI Icons
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import "keen-slider/keen-slider.min.css";
-//Extention page files
+//Imported Files
 import CarouselCard from "./CarouselCard";
 import NFTProducts from './ExtensionProducts';
 import { limitedEdition, liveselling} from "./CarouselData";
@@ -125,7 +125,6 @@ const Carousel = () => {
           <p className="text-center text-gray-400">No products available.</p>
         )}
       </div>
-
       <button
         onClick={() => instanceRef.current?.next()}
         className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 sm:p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"

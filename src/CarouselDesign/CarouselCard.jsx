@@ -3,46 +3,44 @@ import { Star } from "lucide-react";
 import CountdownTimer from './CountdownTimer';
 
 const ProductCard = ({ product, isActive, handleBuyNow }) => (
-             <motion.div
-               initial={{ opacity: 0, y: 40, scale: 0.95 }}
-               animate={{ opacity: 1, y: 0, scale: 1 }}
-               exit={{ opacity: 0, y: 20, scale: 0.9 }}
-               transition={{
-                 duration: 0.4,
-                 ease: "easeOut",
-                 type: "spring",
-                 stiffness: 120,
-               }}
-               className={`group relative w-[500px] h-[450px] p-4 rounded-2xl 
-                 bg-gradient-to-br from-gray-800/60 to-black/40 backdrop-blur-lg
-                 border-2 border-purple-500/30 shadow-xl transform transition-all duration-500
-                 ${isActive ? "scale-100 z-30 opacity-100" : "scale-90 z-10 opacity-60"}`}
-               style={{
-                 transformStyle: "preserve-3d",
-                 perspective: "1000px",
-               }}
-             >
- 
-             {/* Live UI Function */}
-                 {product.isLive && (
-                   <div className="absolute top-6 right-7 flex items-center gap-2 z-40 animate-pulse-slow">
-                     <span className="relative flex h-3 w-3">
-                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                       <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-                     </span>
-                     <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">LIVE</span>
-                   </div>
-                 )}
-                   <div className="relative h-60 mb-4 rounded-lg overflow-hidden">
-                     <img
-                       src={product.image}
-                       alt={product.name}
-                       className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                       loading="lazy"
-                     />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                   </div>
- 
+  <motion.div
+    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    exit={{ opacity: 0, y: 20, scale: 0.9 }}
+    transition={{
+    duration: 0.4,
+    ease: "easeOut",
+    type: "spring",
+    stiffness: 120,
+  }}
+    className={`group relative w-[500px] h-[450px] p-4 rounded-2xl 
+              bg-gradient-to-br from-gray-800/60 to-black/40 backdrop-blur-lg
+              border-2 border-purple-500/30 shadow-xl transform transition-all duration-500
+            ${isActive ? "scale-100 z-30 opacity-100" : "scale-90 z-10 opacity-60"}`}
+              style={{
+              transformStyle: "preserve-3d",
+              perspective: "1000px",
+            }}
+          >
+  {/* Live UI Function */}
+      {product.isLive && (
+          <div className="absolute top-6 right-7 flex items-center gap-2 z-40 animate-pulse-slow">
+            <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                    </span>
+                <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">LIVE</span>
+              </div>
+            )}
+              <div className="relative h-60 mb-4 rounded-lg overflow-hidden">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
                    <p 
                      className="text-sm text-purple-300 mb-1">
                        {product.condition}
@@ -81,6 +79,6 @@ const ProductCard = ({ product, isActive, handleBuyNow }) => (
                      </button>
                    </div>
                  </motion.div>
-);
+  );
 
 export default ProductCard;

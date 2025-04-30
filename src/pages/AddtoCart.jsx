@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { API_BACKENDAPI_URL } from "../../varConstant";
 //Installed Notification
 import { toast } from 'react-hot-toast';
-import Alertmessage from "../Alertmessage";
+import Alertmessage from "../AlertModalNotif/Alertmessage";
 
 const AddtoCart = ({ onCartSync }) => {
   const [cartSessionId, setCartSessionId] = useState(null);

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../marketplace/Navbar";
 import Sidebar from "../marketplace/Sidebar";
 import ProductGrid from "../marketplace/Productgrid";
-import Footer from "../marketplace/Footer";
+import Footer from "../FooterPages/Footer";
 // Installed Notifications
 import { toast } from "react-hot-toast";
 // Backend Calling

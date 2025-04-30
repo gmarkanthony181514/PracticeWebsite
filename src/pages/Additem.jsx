@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react";
 //Importing Files
 import ProductCard from "../marketplace/Productcard";
 import SectionTitle from "../marketplace/SectionTitle";
-import Alertmessage from "../Alertmessage";
+import Alertmessage from "../AlertModalNotif/Alertmessage";
 //Backend Calling
 import { API_BACKENDAPI_URL } from '../../varConstant';
 //Installed Notification
