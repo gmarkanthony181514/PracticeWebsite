@@ -10,6 +10,7 @@
     radial-gradient(circle at 50% 50%, #171717 20%, #171717 20%);
   background-blend-mode: screen;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 .xure-landing {
@@ -19,7 +20,7 @@
 }
 
 .xure-header {
-  padding: 50px 100px;
+  padding: 3vw 5vw;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34,7 +35,7 @@
 .xure-nav ul li {
   list-style: none;
   display: inline-block;
-  margin: 0 15px;
+  margin: 0 1.5vw;
 }
 
 .xure-nav ul li a {
@@ -52,17 +53,17 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding: 50px 100px 0;
+  padding: 5vw;
 }
 
 .xure-text {
   width: 50%;
-  padding-right: 150px;
+  padding-right: 10vw;
 }
 
 .xure-text p {
-  font-size: 25px;
-  line-height: 40px;
+  font-size: 1.5rem; /* Use rem for font sizes */
+  line-height: 2rem;
   color: #f7d091;
 }
 
@@ -74,14 +75,14 @@
 .xure-btn {
   position: relative;
   display: inline-block;
-  font-size: 18px;
+  font-size: 1rem;
   text-transform: uppercase;
   color: #f7d091;
   text-decoration: none;
-  padding: 18px 30px;
+  padding: 1rem 2rem;
   letter-spacing: 2px;
   font-weight: 500;
-  margin-top: 60px;
+  margin-top: 3rem;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
 }
@@ -125,24 +126,24 @@
 
 @media (max-width: 1024px) {
   .xure-header {
-    padding: 30px 50px;
+    padding: 3vw;
   }
   .xure-content {
-    padding: 40px 50px 0;
+    padding: 4vw;
   }
   .xure-text {
-    padding-right: 50px;
+    padding-right: 5vw;
   }
 }
 
 @media (max-width: 768px) {
   .xure-header {
-    padding: 20px 30px;
+    padding: 2vw;
   }
   .xure-content {
-    padding: 30px 30px 0;
     flex-direction: column;
     align-items: center;
+    padding: 3vw;
   }
   .xure-text {
     width: 100%;
@@ -150,33 +151,32 @@
     text-align: center;
   }
   .xure-btn {
-    margin-top: 30px;
+    margin-top: 2rem;
   }
 }
 
 @media (max-width: 480px) {
   .xure-header {
-    padding: 15px 20px;
+    padding: 1.5vw;
   }
   .xure-nav ul {
-    display: flex;
     flex-direction: column;
     align-items: center;
   }
   .xure-nav ul li {
-    margin: 5px 0;
+    margin: 0.5rem 0;
   }
   .xure-content {
-    padding: 20px 20px 0;
+    padding: 2vw;
+    flex-direction: column;
+    align-items: center;
   }
   .xure-text p {
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
   .xure-btn {
-    padding: 12px 20px;
-  }
-  .xure-logo img {
-    width: 120px;
+    font-size: 0.9rem;
+    padding: 0.8rem 1.5rem;
   }
 }

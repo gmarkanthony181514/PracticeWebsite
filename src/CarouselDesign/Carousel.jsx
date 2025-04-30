@@ -80,35 +80,31 @@ const Carousel = () => {
 
 
   return ( 
-    <div className="w-full bg-gray-900 py-12 px-6">
+    <div className="w-full bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-6">
-        <h2 
-          className="text-2xl font-bold text-white">
-            Limited Edition Cards
+        <h2 className="text-2xl sm:text-3xl font-bold text-white">
+          Limited Edition Cards
         </h2>
-        <p 
-          className="text-sm text-gray-400">
-            {filteredProducts.length} items
+        <p className="text-sm sm:text-base text-gray-400">
+          {filteredProducts.length} items
         </p>
       </div>
-      <div 
+      <div
         ref={ref}
-        className={`w-full bg-gray-900 py-12 px-6 transition-opacity duration-1000 ${
+        className={`w-full bg-gray-900 py-12 px-4 transition-opacity duration-1000 ${
           inView ? "opacity-100" : "opacity-0"
         }`}
       >
-      <div className="relative w-full max-w-5xl mx-auto">
-        <button
-          onClick={() => instanceRef.current?.prev()}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
-        >
-          <ChevronLeft className="w-6 h-6 text-white" />
-        </button>
+    <div className="relative w-full max-w-5xl mx-auto">
+      <button
+        onClick={() => instanceRef.current?.prev()}
+        className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-30 p-2 sm:p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
+      >
+        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      </button>
 
-      {/* SlideShow Functionalities */}
-        <div 
-          ref={sliderRef} 
-            className="keen-slider">
+       {/* SlideShow Functionalities */}
+       <div ref={sliderRef} className="keen-slider">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => {
             const isActive = product === currentSlide;
@@ -126,47 +122,46 @@ const Carousel = () => {
             );
           })
         ) : (
-          <p className="text-center text-gray-400">No products available.</p>  
+          <p className="text-center text-gray-400">No products available.</p>
         )}
-        </div>
+      </div>
 
+      <button
+        onClick={() => instanceRef.current?.next()}
+        className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 sm:p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
+      >
+        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      </button>
+    </div>
+
+    <div className="flex justify-center mt-4">
+      {filteredProducts.map((product) => (
         <button
-          onClick={() => instanceRef.current?.next()}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
-        >
-          <ChevronRight className="w-6 h-6 text-white" />
-        </button>
-      </div>
-
-      <div className="flex justify-center mt-4">
-        {filteredProducts.map((product) => (
-          <button
-            key={product.name}
-            className={`w-3 h-3 mx-2 rounded-full ${
-              currentSlide === product ? 'bg-purple-600' : 'bg-gray-400'
-            }`}
-            onClick={() => instanceRef.current?.moveToSlide(filteredProducts.indexOf(product))}
-          />
-        ))}
-      </div>
-
-      <div className="mt-12 text-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Live Selling </h2>
-        <p 
-          className="text-sm text-gray-400">
-            {liveselling.length} items available
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {liveselling.map((product) => (
-          <NFTProducts
-           key={product.name} 
-           product={product} />
-        ))}
-      </div>
+          key={product.name}
+          className={`w-2.5 h-2.5 sm:w-3 sm:h-3 mx-1 sm:mx-2 rounded-full ${
+            currentSlide === product ? "bg-purple-600" : "bg-gray-400"
+          }`}
+          onClick={() =>
+            instanceRef.current?.moveToSlide(filteredProducts.indexOf(product))
+          }
+        />
+      ))}
     </div>
+
+    <div className="mt-12 text-center mb-6">
+      <h2 className="text-2xl sm:text-3xl font-bold text-white">Live Selling</h2>
+      <p className="text-sm sm:text-base text-gray-400">
+        {liveselling.length} items available
+      </p>
     </div>
+
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+      {liveselling.map((product) => (
+        <NFTProducts key={product.name} product={product} />
+      ))}
+    </div>
+  </div>
+</div>
   );
 };
 

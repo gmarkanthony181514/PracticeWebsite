@@ -13,11 +13,12 @@ import { toast } from 'react-hot-toast';
 
 const Additem = ({ addToCart, isSidebarOpen }) => {
   const [localProducts, setLocalProducts] = useState([]);
+  const [visibleProducts, setVisibleProducts] = useState(8);
+  const [selectedFilter, setSelectedFilter] = useState("Active"); // New state for filter
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertConfig, setAlertConfig] = useState({});
   const [fileName, setFileName] = useState("");
-  const [visibleProducts, setVisibleProducts] = useState(8);
   const [newProduct, setNewProduct] = useState({
     token: "",
     title: "",
@@ -100,6 +101,18 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
         return;
       }
 
+      // Check for duplicate items
+      const isDuplicate = localProducts.some(
+        (product) =>
+          product.title.toLowerCase() === newProduct.title.toLowerCase() &&
+          product.description.toLowerCase() === newProduct.description.toLowerCase()
+      );
+  
+      if (isDuplicate) {
+        toast.error("⚠️ An item with the same name and description already exists.");
+        return;
+      }
+
       //For Creating New Item
       const newItem = {
         token: token,
@@ -135,7 +148,13 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
       toast.error(`⚠️ Error adding product to marketplace: ${error.message || '⚠️ An unknown error occurred.'}`);
     }
   };
-
+  
+  const handleLoadMore = () => {
+    setVisibleProducts((prevVisible) => {
+      const newVisible = prevVisible + 8;
+      return newVisible >= localProducts.length ? localProducts.length : newVisible;
+    });
+  };
   
   //List in Marketplace button Function
   const handleListItem = (productId) => {
@@ -261,9 +280,9 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
   setShowAlert(true);
 };
 
-  const handleLoadMore = () => {
-    setVisibleProducts((prevVisible) => prevVisible + 8);
-  };
+  const filteredProducts = localProducts.filter(
+    (product) => product.status === selectedFilter
+  );
 
   return (
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
@@ -276,6 +295,20 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
       </button>
       <SectionTitle title="My Items" mb="mb-11" />
       <br />
+        <div className="flex justify-center mb-6">
+          <button
+            className={`px-4 py-2 rounded-l-lg ${selectedFilter === "Active" ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"}`}
+            onClick={() => setSelectedFilter("Active")}
+          >
+            Active
+          </button>
+          <button
+            className={`px-4 py-2 rounded-r-lg ${selectedFilter === "Inactive" ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"}`}
+            onClick={() => setSelectedFilter("Inactive")}
+          >
+            Inactive
+          </button>
+        </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
       <div className="flex items-center justify-center h-screen">
         <div
@@ -286,7 +319,7 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
           <p className="mt-2 text-gray-600">Add New Item</p>
         </div>
       </div>
-        {localProducts.slice(0, visibleProducts).map((product) => (
+        {filteredProducts.slice(0, visibleProducts).map((product) => (
           <div key={product.marketID} className="relative">
             <ProductCard
               product={{ ...product, status: product.status }}
@@ -309,6 +342,7 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
               </div>
           </div>
         ))}
+
       {showAlert && (
         <Alertmessage
           title={alertConfig.title}
@@ -319,21 +353,17 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
       )}
       </div>
 
-        {visibleProducts < localProducts.length && (
-    <>
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={handleLoadMore}
-          className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all"
-        >
-          Load More
-        </button>
-      </div>
-      <p className="text-white text-center mt-2">
-        Debug: visibleProducts = {visibleProducts}, localProducts.length = {localProducts.length}
-      </p>
-    </>
-  )}
+      {/* Render "Load More" button only once */}
+      {visibleProducts < localProducts.length && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={handleLoadMore}
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-all"
+          >
+            Load More
+          </button>
+        </div>
+      )}
 
       {showAddItemModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-6">
