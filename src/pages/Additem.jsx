@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+//Importing Icons
+import { ChevronLeft } from "lucide-react";
 //Importing Files
 import ProductCard from "../marketplace/Productcard";
 import SectionTitle from "../marketplace/SectionTitle";
@@ -11,7 +14,7 @@ import { toast } from 'react-hot-toast';
 const Additem = ({ addToCart, isSidebarOpen }) => {
   const [localProducts, setLocalProducts] = useState([]);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
-  const [showAlert, setShowAlert] = useState(false); 
+  const [showAlert, setShowAlert] = useState(false);
   const [alertConfig, setAlertConfig] = useState({});
   const [fileName, setFileName] = useState("");
   const [visibleProducts, setVisibleProducts] = useState(8);
@@ -24,6 +27,9 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
     image: "",
     status: "",
   });
+
+  const navigate = useNavigate();
+
   
   //Fetching Products
     const fetchPrivateItems = async () => {
@@ -261,6 +267,13 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
 
   return (
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
+    {/* Back Button */}
+      <button
+        onClick={() => navigate("/marketplace")} // Navigate to marketplace
+        className="absolute top-4 left-4 z-30 p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
+      >
+        <ChevronLeft className="w-6 h-6 text-white" />
+      </button>
       <SectionTitle title="My Items" mb="mb-11" />
       <br />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from "lucide-react";
 //Backend Calling
 import { API_BACKENDAPI_URL } from "../../varConstant";
 //Installed Notification
 import { toast } from 'react-hot-toast';
+import Alertmessage from "../Alertmessage";
 
 const AddtoCart = ({ onCartSync }) => {
   const [cartSessionId, setCartSessionId] = useState(null);
@@ -12,6 +14,8 @@ const AddtoCart = ({ onCartSync }) => {
   const [showModal, setShowModal] = useState(false);
   const [editQuantity, setEditQuantity] = useState(null);
   const [editItem, setEditItem] = useState(null);
+  const [showRemoveAllModal, setShowRemoveAllModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -250,8 +254,15 @@ const AddtoCart = ({ onCartSync }) => {
 
   return (
     <div>
+      {/* Back Button */}
+        <button
+        onClick={() => navigate("/marketplace")} // Navigate to marketplace
+        className="absolute top-4 left-4 z-30 p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
+      >
+        <ChevronLeft className="w-6 h-6 text-white" />
+      </button>
       <div className="w-full min-h-screen bg-gray-100 p-8 flex flex-col">
-        <h2 className="text-2xl font-bold mb-6 border-b pb-3">MY CART</h2>
+      <h2 className="text-2xl font-bold mb-6 border-b pb-3 text-center">MY CART</h2>
           <div className="flex-1 overflow-y-auto pr-4">
             <div className="max-h-[calc(100vh-200px)]">
             {cartItems.map((item) => (
@@ -332,21 +343,51 @@ const AddtoCart = ({ onCartSync }) => {
       <div className="w-full bg-white shadow-lg p-6 flex justify-between items-center border-t mt-auto">
         <span className="text-3xl font-bold">Total: ${total.toFixed(2)}</span>
         <button
-          onClick={removeAllFromCart}
+          onClick={() =>
+             setShowRemoveAllModal(true)
+            }
           className="py-4 px-10 bg-gray-600 text-white font-bold rounded-lg text-3xl hover:bg-gray-700 transition"
         >
           CLEAR CART
         </button>
         <button
-            onClick={() => navigate("/checkout", { state: { cartItems, total, cartSessionId } })}
-            className="py-4 px-10 bg-red-600 text-white font-bold rounded-lg text-3xl hover:bg-red-700 transition"
-          >
-            CHECK OUT
-          </button>
+          onClick={() => 
+            setShowCheckoutModal(true)
+          }
+          className="py-4 px-10 bg-red-600 text-white font-bold rounded-lg text-3xl hover:bg-red-700 transition"
+        >
+          CHECK OUT
+        </button>
         </div>
       </div>
 
-          {/* Modal for editing quantity */}
+      {/* Remove All Cart Modal */}
+        {showRemoveAllModal && (
+          <Alertmessage
+            title="Remove All Cart"
+            message="Are you sure you want to remove all items from your cart?"
+            onConfirm={() => {
+              removeAllFromCart(); // Call the removeAllFromCart function
+              setShowRemoveAllModal(false); // Close the modal
+            }}
+            onCancel={() => setShowRemoveAllModal(false)} // Close the modal
+          />
+        )}
+
+        {/* Checkout Modal */}
+        {showCheckoutModal && (
+          <Alertmessage
+            title="Checkout"
+            message="Are you sure you want to proceed to checkout?"
+            onConfirm={() => {
+              navigate("/checkout", { state: { cartItems, total, cartSessionId } }); // Navigate to checkout
+              setShowCheckoutModal(false); // Close the modal
+            }}
+            onCancel={() => setShowCheckoutModal(false)} // Close the modal
+          />
+        )}
+
+    {/* Modal for editing quantity */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-80">
