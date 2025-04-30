@@ -1,3 +1,1 @@
-#REACT, VITE, TAILWINDCSS
-
-FAKE STORE API - Training for XURE - April 25, 2025 - Friday - INCOMPLETE = FIRST MISTAKE
+https://fake-store-api-eta.vercel.app/
