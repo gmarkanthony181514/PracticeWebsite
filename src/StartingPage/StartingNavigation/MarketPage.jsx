@@ -1,13 +1,16 @@
+//Marketplace Parent File along with the Children Files of
+//Navigation & ProductGrid
+
 import React, { useState, useEffect } from "react";
 // Import Files
-import Navbar from "../marketplace/Navbar";
-import Sidebar from "../marketplace/Sidebar";
-import ProductGrid from "../marketplace/Productgrid";
-import Footer from "../FooterPages/Footer";
+import Navbar from "../../Navigation/NavbarMain";
+import Sidebar from "../../MarketplacePage/ExtraIdeas/Sidebar";
+import ProductGrid from "../../MarketplacePage/Productgrid";
+import Footer from "../../FooterPages/Footer";
 // Installed Notifications
 import { toast } from "react-hot-toast";
 // Backend Calling
-import { API_BACKENDAPI_URL } from "../../varConstant";
+import { API_BACKENDAPI_URL } from "../../BackendConnector/apiRoutes";
 
 const MarketPage = () => {
   const [searchQuery, setSearchQuery] = useState("");

@@ -7,9 +7,9 @@ import { ShoppingCart, Heart, EyeIcon } from "lucide-react";
 //Installed Notification for Error Handling
 import { toast } from 'react-hot-toast';
 //Importing useContext
-import { AppContext } from "../AppContext";
+import { AppContext } from "../Context/AppContext";
 //Backend Calling
-import { API_BACKENDAPI_URL } from "../../varConstant";
+import { API_BACKENDAPI_URL } from "../BackendConnector/apiRoutes";
 
 const ProductCard = ({ product, addToCart, addToWishlist }) => {
   const [showModal, setShowModal] = useState(false);

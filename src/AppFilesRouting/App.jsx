@@ -2,22 +2,23 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import '../tailwind.config.js';
-//pureReactViteUI Imports
-import LandingPage from "./pureReactViteUI/LandingPage"; 
-import LogInRegister from "./pureReactViteUI/LogInRegister"; 
+import '../../tailwind.config.js';
+//StartingPage Components
+import LandingPage from "../StartingPage/LandingPage.jsx"; 
+import LogInRegister from "../StartingPage/LogInRegister.jsx"; 
+//StartingPage Navigation Folder
+import MarketPlace from "../StartingPage/StartingNavigation/MarketPage.jsx"; 
+import NewsFeed from "../StartingPage/StartingNavigation/NewsFeed.jsx"; 
 //Pages Import
-import MarketPlace from "./pages/MarketPage";  
-import NewsFeed from "./pages/NewsFeed";
-import Viewaccount from "./pages/Viewaccount";
-import Additem from "./pages/Additem";
-import AddtoCart from "./pages/AddtoCart";
-import Checkout from "./pages/Checkout";
-import Carousel from "./CarouselDesign/Carousel";
-//Footer Pages
-import AboutUs from "./FooterPages/AboutUs";
-import Contact from "./FooterPages/Contact";
-import PrivacyPolicy from "./FooterPages/PrivacyPolicy";
+import Viewaccount from "../Navigation/ViewAccount.jsx";
+import Additem from "../Navigation/AddingItem.jsx";
+import AddtoCart from "../Navigation/AddtoCart.jsx";
+import Checkout from "../MarketplacePage/Checkout.jsx";
+import Carousel from "../CarouselUIDesign/Carousel.jsx";
+//Footer Components
+import AboutUs from "../FooterPages/AboutUs.jsx";
+import Contact from "../FooterPages/Contact.jsx";
+import PrivacyPolicy from "../FooterPages/PrivacyPolicy.jsx";
 
 
 const App = () => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from "lucide-react";
 //Backend Calling
-import { API_BACKENDAPI_URL } from "../../varConstant";
+import { API_BACKENDAPI_URL } from "../BackendConnector/apiRoutes";
 //Installed Notification
 import { toast } from 'react-hot-toast';
 import Alertmessage from "../AlertModalNotif/Alertmessage";
@@ -41,7 +41,7 @@ const AddtoCart = ({ onCartSync }) => {
     
         console.log("API Response Status:", response.status);
         const data = await response.json();
-        console.log("API Response Dat:",data);
+        console.log("API Response Data:",data);
 
         if (Array.isArray(data)) {
           setCartItems(data);

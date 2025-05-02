@@ -1,18 +1,19 @@
 import { useKeenSlider } from "keen-slider/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+//Carousel Designer for Visibility Adjustment
 import { useInView } from 'react-intersection-observer';
 //Toast Notification for Error Handling
 import { toast } from "react-hot-toast";
 //Package UI Icons
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import "keen-slider/keen-slider.min.css";
 //Imported Files
 import CarouselCard from "./CarouselCard";
 import NFTProducts from './ExtensionProducts';
 import { limitedEdition, liveselling} from "./CarouselData";
 
-//Main Carousel Component (NO API)
+//Just for the Design but without API just for the UI
 const Carousel = () => {
   const [filteredProducts, setFilteredProducts] = useState(limitedEdition);
   const [currentSlide, setCurrentSlide] = useState(filteredProducts[0]);
@@ -29,11 +30,11 @@ const Carousel = () => {
         },
       });
     } catch (error) {
-      toast.error(" ⚠️ Failed to navigate to checkout. Please try again.");
+      toast.error(" ⚠️ Failed to navigate to checkout. Please check your internet connection.");
     }
   };
 
-  //Slide Show Carousel Function
+  //Adjustment how the Slider of Carousel works
   const [sliderRef, instanceRef] = useKeenSlider({
     loop: true,
     slides: {
@@ -62,7 +63,7 @@ const Carousel = () => {
   });
 
 
-  //Filtering products when they are time expired
+  //Filtering temporarily the products if the times has been expired
   useEffect(() => {
     const intervalId = setInterval(() => {
       const updatedProducts = limitedEdition.filter(product => {
@@ -103,7 +104,7 @@ const Carousel = () => {
         <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
       </button>
 
-       {/* SlideShow Functionalities */}
+       {/* Mapping Products from Carousel Data */}
        <div ref={sliderRef} className="keen-slider">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => {
@@ -127,7 +128,7 @@ const Carousel = () => {
       </div>
       <button
         onClick={() => instanceRef.current?.next()}
-        className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 sm:p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition"
+        className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-30 p-2 sm:p-3 bg-gray-800/50 rounded-full backdrop-blur hover:bg-purple-600 transition cursor-pointer"
       >
         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
       </button>

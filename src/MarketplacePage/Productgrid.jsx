@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 //Importing Files
 import ProductCard from "./Productcard";
-import Carousel from "../CarouselDesign/Carousel";
+import Carousel from "../CarouselUIDesign/Carousel";
 //BackEnd Calling
-import {API_BACKENDAPI_URL } from '../../varConstant';
+import {API_BACKENDAPI_URL } from '../BackendConnector/apiRoutes';
 //Installed Notification
 import { toast } from 'react-hot-toast';
 //useContext
-import { AppContext } from "../AppContext";
+import { AppContext } from "../Context/AppContext";
 
 const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
   const [products, setProducts] = useState([]);

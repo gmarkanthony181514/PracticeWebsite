@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Logo from "../assets/images/landingSignUP/logo.png";
 import Details from "../assets/images/landingSignUP/eventDetails.svg";
 //Imported Files
-import "../pureCSSfiles/landingpage.css";
+import "./CSS/landingpage.css";
 
 function LandingPage() {
   //Javascript handler

@@ -1,5 +1,4 @@
 import React from 'react';
-import { API_BACKENDAPI_URL, API_FAKESTORE_URL } from '../../varConstant';
 
 const NewsFeed = () => {
   return (

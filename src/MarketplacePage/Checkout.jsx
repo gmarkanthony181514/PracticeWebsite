@@ -1,7 +1,7 @@
 import {  useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { API_BACKENDAPI_URL } from '../../varConstant';
+import { API_BACKENDAPI_URL } from '../BackendConnector/apiRoutes';
 
 const Checkout = () => {
   const location = useLocation();

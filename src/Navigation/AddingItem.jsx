@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 //Importing Icons
 import { ChevronLeft } from "lucide-react";
 //Importing Files
-import ProductCard from "../marketplace/Productcard";
-import SectionTitle from "../marketplace/SectionTitle";
+import ProductCard from "../MarketplacePage/Productcard";
+import SectionTitle from "../MarketplacePage/ExtraIdeas/SectionTitle";
 import Alertmessage from "../AlertModalNotif/Alertmessage";
 //Backend Calling
-import { API_BACKENDAPI_URL } from '../../varConstant';
+import { API_BACKENDAPI_URL } from '../BackendConnector/apiRoutes';
 //Installed Notification
 import { toast } from 'react-hot-toast';
 
-const Additem = ({ addToCart, isSidebarOpen }) => {
+const ViewItem = ({ addToCart, isSidebarOpen }) => {
   const [localProducts, setLocalProducts] = useState([]);
   const [visibleProducts, setVisibleProducts] = useState(8);
   const [selectedFilter, setSelectedFilter] = useState("Active"); // New state for filter
@@ -488,4 +488,4 @@ const Additem = ({ addToCart, isSidebarOpen }) => {
   );
 };
 
-export default Additem;
+export default ViewItem;

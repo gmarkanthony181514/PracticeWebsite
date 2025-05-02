@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 //Backend and API Calls
 import axios from 'axios';
-import { API_BACKENDAPI_URL} from '../../varConstant';
+import { API_BACKENDAPI_URL} from '../BackendConnector/apiRoutes';
 //Installed Package Notification
 import { toast } from 'react-hot-toast';
 //Imported Files & Images
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import '../pureCSSfiles/LogInRegister.css';
+import './CSS/LogInRegister.css';
 import logoImg from "../assets/images/landingSignUP/logImg.svg";
 import registerImg from "../assets/images/landingSignUP/registerImg.svg";
 

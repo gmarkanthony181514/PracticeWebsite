@@ -1,7 +1,7 @@
 //This file is for training purpose, future idea will be added
 
 import { useEffect, useState } from "react";
-import { API_BACKENDAPI_URL, API_FAKESTORE_URL } from '../../varConstant';
+import { API_BACKENDAPI_URL, API_FAKESTORE_URL } from '../../BackendConnector/apiRoutes';
 
 const Sidebar = ({ onCategorySelect }) => {
   const [categories, setCategories] = useState([]);

@@ -7,15 +7,16 @@ import { Search, ShoppingCart, User, Heart } from "lucide-react";
 //Installed Notification for Error Handling
 import { toast } from 'react-hot-toast';
 //useContext
-import { AppContext } from "../AppContext";
+import { AppContext } from "../Context/AppContext";
 
 const Navbar = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [showSignoutConfirm, setShowSignoutConfirm] = useState(false);
+  const [username, setUsername] = useState(null);
   const navigate = useNavigate();
-  //useContext for cartItems purpose (removing duplication error)
-  const { username, setUsername, cartItems, wishlistItems } = useContext(AppContext);
+  //useContext for cartItems & setCartItems purpose ( just removing duplication error when applying on many files)
+  const { cartItems, wishlistItems } = useContext(AppContext);
   
   //Username on Account Function
   useEffect(() => {
