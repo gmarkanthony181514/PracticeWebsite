@@ -12,7 +12,7 @@ export const AppProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
 
-
+  
   return (
     <AppContext.Provider
      value=

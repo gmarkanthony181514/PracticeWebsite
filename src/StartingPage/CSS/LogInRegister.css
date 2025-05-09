@@ -349,6 +349,39 @@ form.sign-in-form {
   pointer-events: all;
 }
 
+.loading-modal {
+  position: fixed; /* Ensures it overlays the entire page */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Higher z-index to overlay everything */
+  pointer-events: none; /* Prevent interaction with the modal */
+}
+
+.loading-modal.active {
+  pointer-events: all; /* Enable interaction when active */
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-left-color: #ffffff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
 
   .container {

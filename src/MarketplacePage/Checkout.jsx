@@ -1,7 +1,7 @@
 import {  useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { API_BACKENDAPI_URL } from '../BackendConnector/apiRoutes';
+import { API_BACKENDAPI_URL, API_BACKENDAPI2_URL } from '../BackendConnector/apiRoutes';
 
 const Checkout = () => {
   const location = useLocation();
@@ -18,52 +18,57 @@ const Checkout = () => {
   
   const getSessionData = () => {
     const token = sessionStorage.getItem("token");
-    const cartSession = sessionStorage.getItem("cartSessionId");
+    // const cartSession = sessionStorage.getItem("cartSessionId");
   
-    if (!token || token.trim() === "") {
-      toast.error("⚠️ Invalid or missing token. Please log in again.");
+    if (!token) {
+      toast.error("⚠️ You need to be logged in to place an order.");
       return null;
     }
   
-    if (!cartSession || cartSession === "No ID") {
-      toast.error("⚠️ Invalid cart session ID detected.");
-      return null;
-    }
+    // if (!cartSession || cartSession === "No ID") {
+    //   toast.error("⚠️ Invalid cart session ID detected.");
+    //   return null;
+    // }
   
-    return { token, cartSession };
+    return { token };
   };
   
   const handlePlaceOrder = async () => {
     const sessionData = getSessionData();
     if (!sessionData) return;
   
-    const { token, cartSession } = sessionData;
-  
+    // if (!cartSessionId) {
+    //   toast.error("⚠️ Invalid cart session. Please try again.");
+    //   return;
+    // }
+
+    const { token } = sessionData;
+
+    // const { cartSession } = sessionData;
     const requestBody = {
-      token,
-      cartsession: cartSession,
+      cartItems,
     };
   
     setIsLoading(true);
   
     try {
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/checkout`, {
+      const response = await fetch(`${API_BACKENDAPI2_URL}/api/order/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
       });
-          console.log("Request Body:", requestBody);
   
       console.log("API Response Status:", response.status);
       const data = await response.json();
       console.log("API Response Data:", data);
   
-      if (data === "Checked out" || data.message === "Checked out") {
-        toast.success('🎉 Order sent successfully to the seller! Redirecting now on Marketplace...');
+      if (data === "Order placed successfully" || data.message === "Order placed successfully") {
+        toast.success("🎉 Order placed successfully! Redirecting to Marketplace...");
         setTimeout(() => {
-          navigate('/marketplace');
+          navigate("/marketplace");
         }, 1500);
       } else {
         toast.error("Checkout failed. Please try again.");
@@ -76,6 +81,7 @@ const Checkout = () => {
     }
   };
   
+  //NO API YET FOR THIS
   const handleCancelOrder = async () => {
     const sessionData = getSessionData();
     if (!sessionData) return;
@@ -124,7 +130,9 @@ const Checkout = () => {
       setIsLoading(false);
     }
   };
-  
+
+
+  //NO API YET FOR THIS
   const handleViewTransactionHistory = async () => {
     console.log("View Transaction History button clicked");
 
@@ -306,10 +314,12 @@ const Checkout = () => {
           <div className="w-full h-px bg-gray-300"></div>
 
           {cartItems.length > 0 ? (
-            cartItems.map((item, index) => (
-              <div key={`${item.marketID}-${index}`} className="w-full space-y-2">
+            cartItems.map((item) => (
+              <div key={`${item.marketplace_id}`} className="w-full space-y-2">
                 <div className="flex">
-                  <img src={item.image || "default-image.jpg"} alt={item.title} className="w-[30%] rounded" />
+                  <img src={item.image} 
+                  alt={item.title} 
+                  className="w-[30%] rounded" />
                   <div className="pl-4">
                     <p className="font-medium text-lg">{item.title}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>

@@ -31,7 +31,7 @@ const Navbar = ({ onSearch }) => {
       setUsername(null);
       toast.error(" ⚠️ Connection error! ")
     }
-  }, [setUsername]);
+  }, []);
 
   //Search bar function
   const handleSearch = (query) => {

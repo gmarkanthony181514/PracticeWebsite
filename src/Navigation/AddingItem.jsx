@@ -7,11 +7,11 @@ import ProductCard from "../MarketplacePage/Productcard";
 import SectionTitle from "../MarketplacePage/ExtraIdeas/SectionTitle";
 import Alertmessage from "../AlertModalNotif/Alertmessage";
 //Backend Calling
-import { API_BACKENDAPI_URL } from '../BackendConnector/apiRoutes';
+import { API_BACKENDAPI_URL, API_BACKENDAPI2_URL } from '../BackendConnector/apiRoutes';
 //Installed Notification
 import { toast } from 'react-hot-toast';
 
-const ViewItem = ({ addToCart, isSidebarOpen }) => {
+const AddingItem = ({ addToCart, isSidebarOpen }) => {
   const [localProducts, setLocalProducts] = useState([]);
   const [visibleProducts, setVisibleProducts] = useState(8);
   const [selectedFilter, setSelectedFilter] = useState("Active"); // New state for filter
@@ -19,21 +19,19 @@ const ViewItem = ({ addToCart, isSidebarOpen }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertConfig, setAlertConfig] = useState({});
   const [fileName, setFileName] = useState("");
+  const [items, setItems] = useState([]);
+  const navigate = useNavigate();
   const [newProduct, setNewProduct] = useState({
-    token: "",
     title: "",
     description: "",
+    category: "",
     quantity: "",
     price: "",
-    image: "",
-    status: "",
   });
-
-  const navigate = useNavigate();
 
   
   //Fetching Products
-    const fetchPrivateItems = async () => {
+    const fetchItems = async (lastItemId = 0) => {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
@@ -42,49 +40,39 @@ const ViewItem = ({ addToCart, isSidebarOpen }) => {
         }
 
   //API Calling Endpoints
-        const response = await fetch(`${API_BACKENDAPI_URL}/api/viewitem`, {
+        const response = await fetch(`${API_BACKENDAPI2_URL}/api/item/loadmore`, {
           method: "POST",
-        //Required based on Matt documentation
           headers: { 
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
            },
-          body: JSON.stringify({ token }),
-        });
+           body: JSON.stringify({ lastItemId }),
+          });
   
         if (!response.ok) {
-          const errorDetails = await response.text();
-          throw new Error(` ⚠️ Failed to fetch items. Status: ${response.status}, Message: ${errorDetails}`);
+          throw new Error(`⚠️ Failed to fetch items. Status: ${response.status}`);
         }
         
         console.log("ViewItem Response Status", response.status);
         const data = await response.json();
         console.log("ViewItem Response Data", data);
 
-        //For Viewing Items
-        if (Array.isArray(data) && data.length > 0) {
-          const mappedProducts = data.map((item) => ({
-            marketID: item.ItemID,
-            title: item.Brand || "No details",
-            description: item.Model || "No description available",
-            quantity: parseInt(item.Quantity) || 0,
-            price: parseFloat(item.price) || 0,
-            image: item.Image || "default-image.svg",
-            status: item.STATUS,
-          }));
-          setLocalProducts(mappedProducts);
+        // Ensure `result.data` is an array before appending
+        if (Array.isArray(data.data)) {
+          setItems((prevItems) => [...prevItems, ...data.data]);
+          setLocalProducts((prevProducts) => [...prevProducts, ...data.data]);
         } else {
-          toast.error("⚠️ No created item has been added.");
+          console.error("⚠️ Unexpected data format:", data);
+          toast.error("⚠️ Unexpected data format received from the server.");
         }
       } catch (error) {
-        toast.error(`⚠️ Error fetching private items: ${error.message}`);
+        toast.error(`⚠️ Error fetching items: ${error.message}`);
       }
     };
-
-
-  useEffect(() => {
-    fetchPrivateItems();
-  }, []);
+  
+    useEffect(() => {
+      fetchItems(0);
+    }, []);
 
   //Input Change Function
   const handleInputChange = (e) => {
@@ -101,188 +89,185 @@ const ViewItem = ({ addToCart, isSidebarOpen }) => {
         return;
       }
 
-      // Check for duplicate items
-      const isDuplicate = localProducts.some(
-        (product) =>
-          product.title.toLowerCase() === newProduct.title.toLowerCase() &&
-          product.description.toLowerCase() === newProduct.description.toLowerCase()
-      );
-  
-      if (isDuplicate) {
-        toast.error("⚠️ An item with the same name and description already exists.");
-        return;
-      }
+      // Validate Input Fields
+        const { title, description, category, quantity, price } = newProduct;
+          if (!title || !description || !category || !quantity || !price) {
+            toast.error("⚠️ All fields are required.");
+          return;
+          }
+      
+          if (isNaN(quantity) || parseInt(quantity) <= 0) {
+            toast.error("⚠️ Quantity must be a positive integer.");
+          return;
+          }
+      
+          if (isNaN(price) || parseFloat(price) <= 0) {
+            toast.error("⚠️ Price must be a positive number.");
+          return;
+          }
 
       //For Creating New Item
-      const newItem = {
-        token: token,
-        brand: newProduct.title,
-        model: newProduct.description,
-        quantity: parseInt(newProduct.quantity),
-        image: newProduct.image || "default-image.jpg",
-        price: parseFloat(newProduct.price),
+      const creatingItem = {
+        title,
+        description,
+        category,
+        quantity: parseInt(quantity),
+        price: parseFloat(price),
       };
 
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/CreateItem`, {
+      const response = await fetch(`${API_BACKENDAPI2_URL}/api/item`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newItem),
+        body: JSON.stringify(creatingItem),
       });
 
-      console.log("Create Item API Status", response.status); // Log the response status\
+      console.log("API Response", response.status);
       const data = await response.json();
-      console.log("Create Item API Data", data);
+      console.log("Backend Item", data);
 
-      if (response.ok && data === "Created Item") {
-        toast.success("🎉 Created Item successfully created!");
+      if (data === "Item created successfully") {
+        toast.success("🎉 Item created successfully!");
         setShowAddItemModal(false);
-        setNewProduct({ token: "", title: "", description: "", quantity: "", price: "", image: "default-image.svg" });
-        fetchPrivateItems();
+        setNewProduct({ title: "", description: "", category: "", quantity: "", price: "" });
+        fetchItems();
       } else {
-        toast.error("⚠️ Error about incomplete input fields: ");
+        toast.error(`⚠️ ${data}`);
       }
     } catch (error) {
-      toast.error(`⚠️ Error adding product to marketplace: ${error.message || '⚠️ An unknown error occurred.'}`);
+      toast.error(`⚠️ Error creating item: ${error.message}`);
     }
   };
   
   const handleLoadMore = () => {
-    setVisibleProducts((prevVisible) => {
-      const newVisible = prevVisible + 8;
-      return newVisible >= localProducts.length ? localProducts.length : newVisible;
-    });
+    if (items.length > 0) {
+      const lastItemId = items[items.length - 1].item_id;
+      fetchItems(lastItemId);
+    } else {
+      fetchItems(0);
+    }
   };
   
-  //List in Marketplace button Function
-  const handleListItem = (productId) => {
-    const productToList = localProducts.find((item) => item.marketID === productId);
-    if (!productToList) {
-      toast.error("⚠️ Item not found or missing required data.");
-      return;
-    }
-
-    setAlertConfig({
-      title: "List Item in Marketplace",
-      message: "Are you sure you want to list this item in the marketplace?",
-      onConfirm: async () => {
-
-    try {
-      const token = sessionStorage.getItem("token");
-      if (!token) {
-        toast.error("No token found. User must sign in.");
+    //List in Marketplace button Function
+    const handleListItem = (productId) => {
+      const productToList = localProducts.find((item) => item.item_id === productId);
+      if (!productToList) {
+        toast.error("⚠️ Item not found or missing required data.");
         return;
       }
-  
-      //For Listing in Marketplace
-      const marketplacePayload = {
-        token: token,
-        itemid: productToList.marketID,
-        quantity: parseInt(productToList.quantity),
-        price: parseFloat(productToList.price),
-        description: productToList.description || "No description available",
-      };
-
-      if (productToList.price <= 0) {
-        toast.error("⚠️ Price must be not 0.");
-        return;
-      }
-  
-      console.log("Payload:", marketplacePayload);
-
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/CreateMarketListing`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+    
+      setAlertConfig({
+        title: "List Item in Marketplace",
+        message: "Are you sure you want to list this item in the marketplace?",
+        onConfirm: async () => {
+          try {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+              toast.error("⚠️ No token found. User must sign in.");
+              return;
+            }
+    
+            // Validate Input Fields
+            if (productToList.quantity <= 0 || productToList.price <= 0) {
+              toast.error("⚠️ Quantity and price must be greater than 0.");
+              return;
+            }
+    
+            // API Call to List Item
+            const response = await fetch(`${API_BACKENDAPI2_URL}/api/marketplace/add`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                item_id: productToList.item_id,
+                quantity: productToList.quantity,
+                price: productToList.price,
+              }),
+            });
+    
+            const responseText = await response.text();
+            console.log("List Item API Response:", responseText);
+    
+            if (response.ok) {
+              toast.success("🎉 Item successfully listed in the marketplace.");
+            } else {
+              console.error("⚠️ Error listing item:", responseText);
+              toast.error(`⚠️ Failed to list item: ${responseText}`);
+            }
+          } catch (error) {
+            console.error("⚠️ Error listing item:", error);
+            toast.error(`⚠️ Error listing item: ${error.message}`);
+          }
+    
+          setShowAlert(false);
         },
-        body: JSON.stringify(marketplacePayload),
+        onCancel: () => setShowAlert(false),
       });
-      
-      const responseText = await response.text();
-      
-      if (!response.ok) {
-        console.error("API Error:", responseText);
-        toast.error(`⚠️ Failed to list item: ${responseText}`);
-        return;
-      }
-  
-      if (response.ok && responseText === "Posted Item in MarketPlace") {
-        toast.success("🎉 Item successfully listed in the Marketplace");
-        fetchPrivateItems();
-      } else {
-        toast.error(`⚠️ ${responseText}`);
-      }
-    } catch (error) {
-      console.error("⚠️ Error listing item in marketplace:", error);
-      toast.error(`⚠️ Error listing item: ${error.message}`);
-    }
-    setShowAlert(false);
-  },
-    onCancel: () => setShowAlert(false),
-  });
-    setShowAlert(true);
-  };
+    
+      setShowAlert(true);
+    };
   
   //Delete button Function
-  const handleDeleteItem = (itemId) => {
-    setAlertConfig({
-      title: "Delete Item",
-      message: "Are you sure you want to delete this item?",
-      onConfirm: async () => {
-        
-    if (!itemId) {
-      console.error(" ⚠️ No itemId provided.");
-      return;
-    }
-  
-  //API Calling Enpoints
-    try {
-      const token = sessionStorage.getItem("token");
-      if (!token) {
-        toast.error(" ⚠️ No token found. User must sign in.");
-        return;
-      }
-      
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/deleteitem`, {
-        method: "POST",
-      //Required based on Matt Documentation
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+    const handleDeleteItem = (itemId) => {
+      setAlertConfig({
+        title: "Delete Item",
+        message: "Are you sure you want to delete this item?",
+        onConfirm: async () => {
+          if (!itemId) {
+            console.error("⚠️ No itemId provided.");
+            toast.error("⚠️ No itemId provided.");
+            return;
+          }
+    
+          try {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+              toast.error("⚠️ No token found. User must sign in.");
+              return;
+            }
+    
+            // API Call to Delete Item
+            const response = await fetch(`${API_BACKENDAPI2_URL}/api/Deleteitem`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ item_id: itemId }), // Match the API request body
+            });
+    
+            const responseText = await response.text();
+            console.log("Delete Item API Response:", responseText);
+    
+            if (response.ok) {
+              toast.success("🎉 Successfully deleted the item.");
+              setLocalProducts((prevProducts) =>
+                prevProducts.filter((product) => product.item_id !== itemId)
+              );
+            } else {
+              console.error("⚠️ Error deleting item:", responseText);
+              toast.error(`⚠️ Failed to delete item: ${responseText}`);
+            }
+          } catch (error) {
+            console.error("⚠️ Error deleting item:", error);
+            toast.error(`⚠️ Error deleting item: ${error.message}`);
+          }
+    
+          setShowAlert(false);
         },
-        body: JSON.stringify({
-          token: token,
-          itemid: itemId,
-        }),
+        onCancel: () => setShowAlert(false),
       });
-  
-      console.log("Delete Item API", response.status); // Log the response status
-      const data = await response.json();
-      console.log(data);
+    
+      setShowAlert(true);
+    };
 
-      if (response.status === 200) {
-        toast.success (" 🎉 Successfully Deleted the Created Item.")
-        fetchPrivateItems();
-      } else {
-        console.error(" ⚠️ Error deleting item:", data);
-        toast.error(" ⚠️ Error deleting item.");
-      }
-    } catch (error) {
-      toast.error(" ⚠️ Failed to delete item:", error);
-    }
-    setShowAlert(false);
-  },
-    onCancel: () => setShowAlert(false),
-  });
-  setShowAlert(true);
-};
-
-  const filteredProducts = localProducts.filter(
-    (product) => product.status === selectedFilter
-  );
+const filteredProducts = localProducts.filter(
+  (product) => product.status.toLowerCase() === selectedFilter.toLowerCase()
+);
 
   return (
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
@@ -319,29 +304,29 @@ const ViewItem = ({ addToCart, isSidebarOpen }) => {
           <p className="mt-2 text-gray-600">Add New Item</p>
         </div>
       </div>
-        {filteredProducts.slice(0, visibleProducts).map((product) => (
-          <div key={product.marketID} className="relative">
-            <ProductCard
-              product={{ ...product, status: product.status }}
-              addToCart={addToCart}
-              addToWishlist={(item) => toast.success(`Added ${item.title} to wishlist!`)}
-            />
+      {filteredProducts.slice(0, visibleProducts).map((product) => (
+        <div key={product.item_id} className="relative">
+          <ProductCard
+            product={{ ...product, status: product.status }}
+            addToCart={(item) => toast.success(`Added ${item.title} to cart!`)}
+            addToWishlist={(item) => toast.success(`Added ${item.title} to wishlist!`)}
+          />
           <div className="flex gap-2 mt-2">
             <button
-              onClick={() => handleListItem(product.marketID)}
+              onClick={() => handleListItem(product.item_id)}
               className="w-full bg-green-500 text-white py-2 rounded"
             >
               List in Marketplace
             </button>
-              <button
-                onClick={() => handleDeleteItem(product.marketID)}
-                className="w-full bg-red-500 text-white py-2 rounded"
-              >
-                Delete
-              </button>
-              </div>
+            <button
+              onClick={() => handleDeleteItem(product.item_id)}
+              className="w-full bg-red-500 text-white py-2 rounded"
+            >
+              Delete
+            </button>
           </div>
-        ))}
+        </div>
+      ))}
 
       {showAlert && (
         <Alertmessage
@@ -447,6 +432,17 @@ const ViewItem = ({ addToCart, isSidebarOpen }) => {
                   value={newProduct.description}
                 ></textarea>
               </div>
+              <div>
+              <label className="block text-gray-300 font-medium mb-2">Category</label>
+              <input
+                type="text"
+                name="category"
+                placeholder="e.g. Electronics, Books, Clothing"
+                className="w-full border border-gray-500 bg-gray-800 text-white p-3 rounded-lg"
+                onChange={handleInputChange}
+                value={newProduct.category}
+              />
+            </div>
               <div className="flex gap-4">
                 <div className="w-1/2">
                   <label className="block text-gray-300 font-medium mb-2">Price</label>
@@ -488,4 +484,4 @@ const ViewItem = ({ addToCart, isSidebarOpen }) => {
   );
 };
 
-export default ViewItem;
+export default AddingItem;

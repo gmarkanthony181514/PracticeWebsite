@@ -1,99 +1,17 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 //Importing Files
 import ProductCard from "./Productcard";
-import Carousel from "../CarouselUIDesign/Carousel";
-//BackEnd Calling
-import {API_BACKENDAPI_URL } from '../BackendConnector/apiRoutes';
 //Installed Notification
 import { toast } from 'react-hot-toast';
 //useContext
 import { AppContext } from "../Context/AppContext";
 
-const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
-  const [products, setProducts] = useState([]);
+const ProductGrid = ({ searchQuery, isSidebarOpen, products }) => {
   const [displayedProducts, setDisplayedProducts] = useState([]);
-  const [lastMarketId, setLastMarketId] = useState(null);
-  const [loading, setLoading] = useState(false);
   const noMatchToastShown = useRef(false);
+  const [loading, setLoading] = useState(false);
 
   const { cartItems, setCartItems, wishlistItems, setWishlistItems } = useContext(AppContext);
-
-  // Fetching Products
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const token = sessionStorage.getItem("token");
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/ViewMarket`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          last_market_id: lastMarketId || "",
-          search: searchQuery || "",
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.statusText}`);
-      }
-  
-      console.log("View Market Response", response.status);
-      const data = await response.json();
-      console.log(data);
-
-
-      if (data === "No Data") {
-        toast.info("⚠️ No more products available.");
-        return;
-      }
-  
-      if (data === "Failed to list market items") {
-        toast.error("⚠️ Failed to load products. Please try again.");
-        return;
-      }
-  
-      if (Array.isArray(data)) {
-        if (data.length > 0) {
-          const usedIds = new Set(); // To ensure unique cart IDs within the session
-  
-          const formattedProducts = data.map((product) => {
-            const cartID = product.CartID !== undefined ? product.CartID : null;
-            const cartsessionID = product.CartSessionID !== undefined ? product.CartSessionID : null;
-          
-            return {
-              marketID: `market-${product.MarketID || "No ID"}-${product.ItemID || "No ID"}-${product.UserID || "No ID"}`,
-              userID: product.UserID,
-              cartID,
-              cartsessionID,
-              status: product.Status,
-              title: `${product.Brand || "No details"} ${product.Model || "No details"}`,
-              dateListed: product.DateListed,
-              quantity: product.Quantity,
-              price: product.Price,
-              description: product.Description || "No description available",
-              image: product.Image ? `data:image/jpeg;base64,${product.Image}` : "/default.jpg",
-              username: product.Username,
-              ItemID: product.ItemID,
-            };
-          });
-  
-          setProducts(formattedProducts);
-          setDisplayedProducts(formattedProducts);
-          setLastMarketId(formattedProducts[formattedProducts.length - 1].marketID);
-          toast.success("🎉 Successfully loaded available products.");
-        } else {
-          setProducts([]);
-          setDisplayedProducts([]);
-        }
-      }
-    } catch (error) {
-      toast.error(`⚠️ Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Avoid spamming Toast Notification
   useEffect(() => {
@@ -122,13 +40,6 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
     return () => clearTimeout(debounceToast);
   }, [searchQuery, products]);
 
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      fetchProducts();
-    }, 500);
-    return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
-
   // Add to Cart
   const handleAddToCart = (product) => {
     if (cartItems.some((item) => item.marketID === product.marketID)) {
@@ -138,8 +49,8 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
 
     const productWithIDs = {
       ...product,
-      cartID,
-      cartsessionID,
+      cartID: product.cartID || "",
+      cartsessionID: product.cartsessionID || "",
     };
   
     setCartItems((prevItems) => {
@@ -171,20 +82,19 @@ const ProductGrid = ({ searchQuery, isSidebarOpen }) => {
   return (
 
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
-      <Carousel />
       <br />
       <div className="grid grid-cols-10 md:grid-cols-3 gap-10 p-4">
         {displayedProducts.length > 0 ? (
           displayedProducts.map((product) => (
             <ProductCard
-              key={product.marketID}
+              key={product.id}
               product={product}
               addToCart={handleAddToCart}
               addToWishlist={handleAddToWishlist}
             />
           ))
         ) : (
-          <p className="col-span-4 text-center text-gray-500">No products available.</p>
+          <p className="col-span-4 text-center text-gray-500">There is nothing here!</p>
         )}
       </div>
     </div>

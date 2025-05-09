@@ -1,77 +1,88 @@
-import React, { useState, useEffect, useRef} from 'react';
-import { useNavigate } from 'react-router-dom';
-//Backend and API Calls
-import axios from 'axios';
-import { API_BACKENDAPI_URL} from '../BackendConnector/apiRoutes';
-//Installed Package Notification
-import { toast } from 'react-hot-toast';
-//Imported Files & Images
+import { useState, useEffect, useRef} from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import './CSS/LogInRegister.css';
+//Navigatiion
+import { useNavigate } from 'react-router-dom';
+//Backend Connector
+import axios from 'axios';
+import { API_BACKENDAPI2_URL} from '../BackendConnector/apiRoutes';
+//Importing Notification Package
+import { toast } from 'react-hot-toast';
+//Importing Images
 import logoImg from "../assets/images/landingSignUP/logImg.svg";
 import registerImg from "../assets/images/landingSignUP/registerImg.svg";
+//Hard Coded CSS Responsive with Animation
+import './CSS/LogInRegister.css';
 
 const LogInRegister = () => {
+  //For Animation Situation of Sign In and Sign Up
   const [isSignUpMode, setIsSignUpMode] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
-  const [formData, setFormData] = useState({ username: '', password: ''});
-  const navigate = useNavigate();
-  //Password Strength Checker
-  const [passwordStrength, setPasswordStrength] = useState('');
+  //Loading Modal
+  const [isLoading, setIsLoading] = useState(false);
+  //Password Strength
   const [strengthLevel, setStrengthLevel] = useState('');
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [strengthMessage, setStrengthMessage] = useState('');
   const [strengthColor, setStrengthColor] = useState('');
+  //Real time Password changes
   const prevPassword = useRef('');
-  //Error handling
-  const showError = (message) => {
-    toast.error(message);
-  };
-  const showSuccess = (message) => {
-    toast.success(message);
-  };
+  //Navigation
+  const navigate = useNavigate();
+  //Fill up Form Data
+  const [formData, setFormData] = useState(
+    { 
+      username: '',
+      password: '',
+      confirmpassword: '',
+      email: ''
+    }
+);
 
-  //Animation Card Click
+
+  //Animation Happening For SignIn and Sign Up buttons for switching two grid columns
   const handleSignInClick = () => {
     setIsSignUpMode(false);
-    setShowIntro(false);
   };
 
   const handleSignUpClick = () => {
     setIsSignUpMode(true);
-    setShowIntro(false);
   };
 
   // Functionalities of Password Strength
   const evaluatePasswordStrength = (password) => {
+    //Checker of Maximum Length of Password
     const passwordLength = password.length;
+    //Checker for password, symbol, alphabet are totally met the Regex Functionalities
     const numericCount = (password.match(/[0-9]/g) || []).length;
     const hasSymbol = /[^a-zA-Z0-9]/.test(password);
     const alphabetCount = (password.match(/[a-zA-Z]/g) || []).length;
   
+    //Limit the password length into 20 characters only
     if (passwordLength > 20) {
       setStrengthLevel('too-long');
-      setStrengthMessage('⚠️ Password should not exceed 20 characters.');
+      setStrengthMessage('⚠️ Password should not exceed more than 20 characters');
       setStrengthColor('red');
       return;
     }
   
+    //The strength password will start at the 1 character
     const isLengthValid = passwordLength >= 1;
+    //The strength password will automatically updated real time when met this conditions
     const hasCharacters = alphabetCount >= 8;
     const hasEnoughNumbers = numericCount >= 2;
     const hasSpecialChar = hasSymbol;
   
-    if (!hasCharacters) {
-      setStrengthLevel('weak');
-      setStrengthMessage('Must include at least 8 alphabet character');
-      setStrengthColor('red');
-      return;
-    }
-  
+    //if all conditions are met, the passChecks will be increased accordingly
     let passedChecks = 0;
+    //this is where the password checker will be started
     if (isLengthValid) passedChecks++;
-    if (hasEnoughNumbers) passedChecks++;
-    if (hasSpecialChar) passedChecks++;
+    //if met this condition, the password will be considered as weak
     if (hasCharacters) passedChecks++;
+    //if met this condition, the password will be considered as fair
+    if (hasEnoughNumbers) passedChecks++;
+    //if met this condition, the password will be considered as strong
+    if (hasSpecialChar) passedChecks++;
+
+    //Example password: markgarcia_xure071403
   
     if (passedChecks === 0) {
       setStrengthLevel('');
@@ -92,6 +103,7 @@ const LogInRegister = () => {
     }
   };  
 
+  //This is where the prevPassword will be working real time checker
   useEffect(() => {
     if (formData.password && formData.password !== prevPassword.current) {
       evaluatePasswordStrength(formData.password);
@@ -102,182 +114,310 @@ const LogInRegister = () => {
       setStrengthColor('');
     }
   }, [formData.password]);  
-  
-  //Real time changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-  
-    if (name === 'username') {
-      const filteredUsername = value.replace(/[^a-zA-Z0-9]/g, '');
-      setFormData((prevState) => ({
-        ...prevState, [name]: filteredUsername,
-      }));
-    } else {
-      setFormData((prevState) => ({
-        ...prevState, [name]: value,
-      }));
-  
-      if (name === 'password') {
-        evaluatePasswordStrength(value);
-      }
-    }
-  };  
 
-  //Sign up Session
-  const handleRegister = async (e) => {
-    e.preventDefault();
+
+  const handleChange = ({ target: { name, value } }) => {
+    const checkerValue = name === 'username' ? value.replace(/[^a-zA-Z0-9]/g, '') : value;
+    setFormData((prev) => ({ ...prev, [name]: checkerValue }));
+  };
   
+  //Register Handler Session
+  const handleRegister = async (e) => {
+    //this is where checking for the spaces, if the password has been match, and regex validation
+    e.preventDefault();
+    setIsLoading(true);
+  
+    //Checking if the username and password does contain spaces
     if (formData.username.includes(' ') || formData.password.includes(' ')) {
-      showError(" ⚠️ Username and password should not contain spaces.");
+      toast.error(" ⚠️ Password should not contain spaces.");
       return;
     }
+
+    //Matching if the password and confirm password are on the same situation
+    if (formData.password !== formData.confirmpassword) {
+      toast.error(" ⚠️ Your passwords do not match.");
+      return;
+  }
   
-    // Regex Functionalities
+    //Applying Regex for the Username
     const usernameRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]+$/;
     if (formData.username.length < 5) {
-      showError(" ⚠️ Username must be at least 5 characters");
-      return;
-    }
-    
-    const digitCount = (formData.username.match(/\d/g) || []).length;
-    if (digitCount < 2) {
-      showError(" ⚠️ Username must contain at least 2 numbers");
-      return;
-    }
-    
-    if (!usernameRegex.test(formData.username)) {
-      showError(" ⚠️ Username format is invalid");
-      return;
-    }
-    
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/;
-    if (formData.password.length < 8 || !passwordRegex.test(formData.password)) {
-      showError(" ⚠️ Password didn't appear to be strong enough. Please try again.");
+      toast.error(" ⚠️ Username must be at least 5 characters");
       return;
     }
 
-    //Calling API Endpoints
+    if (!usernameRegex.test(formData.username)) {
+      toast.error(" ⚠️ Username format is invalid");
+      return;
+    }
+    
+    //Checking if the username does contain at least 2 numbers and its mandatory
+    const usernameCount = (formData.username.match(/\d/g) || []).length;
+    if (usernameCount < 2) {
+      toast.error(" ⚠️ Username should contain at least 2 numbers.");
+      return;
+    }
+
+    //Applying Regex for the Password
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).+$/;
+    //if the password is less than 8 characters, it will not be accepted
+      if (formData.password.length < 8 || !passwordRegex.test(formData.password)) {
+        toast.error(" ⚠️ Your password are too short and does not met all the requirements needed.");
+        return;
+      }
+
+    //Applying Regex for the email to make less special characters and more readable as a email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast.error(" ⚠️ Please enter a proper email address.");
+        return;
+      }
+
+
+    //Calling Rico API of Createuser
     try {
-     const res = await axios.post(`${API_BACKENDAPI_URL}/api/createuser`, 
+     const response = await axios.post(`${API_BACKENDAPI2_URL}/api/Createuser`, 
       {
         username: formData.username,
-        password: formData.password
+        password: formData.password,
+        confirmPassword: formData.confirmpassword,
+        email: formData.email
       });
 
-      showSuccess("🎉 Registered Successfully! Directing to Log in.");
+      toast.success("🎉 User has been Created! Directing to Sign in.");
       setIsSignUpMode(false);
+
+      //Error Parameters based on Rico Documentation based on Createuser API
     } catch (error) {
-      if (error.response?.status === 409) {
-        showError(" ⚠️ Username or password already exists. Try a different one.");
-      } else if (error.code === 'ECONNABORTED') {
-        showError(" ⚠️ Server took too long to respond. Check your internet connection.");
+      if (error.response?.status === 400) {
+        toast.error(" ⚠️Username and password are required.");
+      } else if (error.response?.status === 409) {
+        toast.error("⚠️ Username already exists.");
+      } else if (error.response?.status === 500) {
+        toast.error("⚠️ Failed to create user.");
       } else {
-        showError(error.response?.data?.message || " ⚠️ Something went wrong. Please try again.");
+        toast.error(error.response?.data?.message || " ⚠️ The server is down... Please contact us to fix this issue.");
       }
+    } finally  {
+      setIsLoading(false);
     }
   };
 
-  //Sign in Session
+  //Login Handler Session
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
+  //Checking if the user put spaces too on the sign in situation
     if (formData.username.includes(' ') || formData.password.includes(' ')) {
-      showError(" ⚠️ No spaces allowed in username or password.");
+      toast.error(" ⚠️ No spaces allowed in username or password.");
       return;
     }
 
-    //Calling API Endpoints
+    //Calling Rico API of Login
     try {
-      const response = await axios.post(`${API_BACKENDAPI_URL}/api/Login`, {
+    const response = await axios.post(`${API_BACKENDAPI2_URL}/api/Login`, {
         username: formData.username,
-        password: formData.password
+        password: formData.password,
     });
 
-      const data = response.data?.[0];
+    //Checking if the data response from the API is an array or not for security purposes
+    const data = Array.isArray(response.data) ? response.data[0] : response.data;
 
+    //if there is no token included on the API response this will be triggered
     if (!data?.token) {
-      showError(" ⚠️ Login failed: Incorrect username or password!");
-        return;
+      toast.error("⚠️ You cannot login without a token. Please contact us.");
+      return;
     }
   
-    //Saving Username & Token on Storage
-    try {
-        sessionStorage.setItem("username", formData.username);
-        sessionStorage.setItem("token", data.token);
-        showSuccess(" 🎉 Login Successful! Redirecting to Marketplace...");
+   //For the web browser does not support sessionStorage such as the incognito mode.
+        try {
+          sessionStorage.setItem("username", data.username || formData.username);
+          sessionStorage.setItem("token", data.token);
+        } catch (storageError) {
+          toast.error("⚠️ Unable to save session data. Please check your browser settings.");
+          return;
+        }
+        
+        toast.success("🎉 Login Successful! Redirecting to Marketplace...");
         setTimeout(() => {
-          window.location.href = '/marketplace';
+          navigate('/marketplace');
         }, 1000);
-    } catch (storageError) {
-      showError(" ⚠️ Failed to save session data. Please check your browsing settings.");
-    }
+        
+      //Error Parameters based on Rico Documentation on Login API
       } catch (error) {
         if (!error.response) {
-          showError(" ⚠️ Network error. Please check you internet connection.");
+          toast.error("⚠️ Slow connection detected! Please wait...");
         } else if (error.response.status === 401) {
-          showError(" ⚠️ Incorrect username or password")
+          toast.error("⚠️ Invalid credentials.");
+        } else if (error.response.status === 403) {
+          toast.error("⚠️ User account is deactivated.");
+        } else if (error.response.status === 400) {
+          toast.error("⚠️ Username and password required.");
         } else {
-          showError(error.response?.data?.message || " ⚠️ Login failed. Please try again.");
+          toast.error(error.response?.data?.message || "⚠️ The server is down... Please contact us to fix this issue.");
         }
+      } finally {
+        setIsLoading(false);
       }
-  };
+    };
 
+
+  
   return (
-    <div className={`container ${isSignUpMode ? 'sign-up-mode' : ''} ${showIntro ? 'show-intro' : ''}`}>
-      <div className="forms-container">
-        <div className="signin-signup">
-          {/* Sign in Session */}
-            <form className="sign-in-form" onSubmit={handleLogin}>
-              <h2 className="title"> 𝐒𝐈𝐆𝐍 𝐈𝐍 </h2>
+  <div className={`container ${isSignUpMode ? 'sign-up-mode' : ''}`}>
+
+    {/* Loading Modal Situation */}
+    {isLoading && (
+      <div className="loading-modal active">
+        <div className="loading-spinner"></div>
+      </div>
+    )}
+
+    {/* Form Data Container */}
+    <div className="forms-container">
+      <div className="signin-signup">
+
+        {/* Sign in Session */}
+        <form className="sign-in-form" onSubmit={handleLogin}>
+          <h2 className="title">𝐒𝐈𝐆𝐍 𝐈𝐍</h2>
+          <div className="input-field">
+            <i className="fas fa-user"></i>
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              disabled={isLoading} // Disable input when loading
+              required
+            />
+          </div>
+          <div className="input-field">
+            <i className="fas fa-lock"></i>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={isLoading} // Disable input when loading
+              required
+            />
+          </div>
+          <input
+            type="submit"
+            value="LOGIN"
+            className="btn solid"
+            disabled={isLoading} // Disable button when loading
+          />
+        </form>
+
+        {/* Sign up Session */}
+          <form className="sign-up-form" onSubmit={handleRegister}>
+            <h2 className="title">𝐒𝐈𝐆𝐍 𝐔𝐏</h2>
+              <div className="input-field">
+                <i className="fas fa-user"></i>
+                  <input
+                      type="text"
+                      name="username"
+                      placeholder="Username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      required
+                  />
+              </div>
                 <div className="input-field">
-                  <i className="fas fa-user"></i>
-                    <input type="text" name="username" placeholder="Username" value={formData.username} onChange={handleChange} required />
+                  <i className="fas fa-lock"></i>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      onFocus={() => setIsPasswordFocused(true)}
+                      onBlur={() => setIsPasswordFocused(false)}
+                      required
+                    />
                 </div>
-                <div className="input-field">
-              <i className="fas fa-lock"></i>
-            <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-          </div>
-        <input type="submit" value="LOGIN" className="btn solid" />
-      </form>
-          {/* Sign up Session */}
-            <form className="sign-up-form" onSubmit={handleRegister}>
-              <h2 className="title"> 𝐒𝐈𝐆𝐍 𝐔𝐏 </h2>
-                <div className="input-field">
-                  <i className="fas fa-user"></i>
-                    <input type="text" name="username" placeholder="Username" value={formData.username} onChange={handleChange} required />
-                </div>
-                <div className="input-field">
-              <i className="fas fa-lock"></i>
-            <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
-          </div>
-          <div className="password-strength-container">
-        <div
-          id="strength-bar"
-            className={`strength-bar ${strengthLevel}`}
-              style={{
-                width: 
-                  strengthLevel === 'weak' ? '30%' :
-                    strengthLevel === 'fair' ? '60%' :
-                      strengthLevel === 'strong' ? '100%' : '0%',
-                    }}
-              ></div>
-            <div id="password-strength-text" style={{ color: strengthColor }}>{strengthMessage}</div>
-          </div>
-        <ul className="password-requirements">
-          <li className={formData.password.length >= 8 && /[a-zA-Z]/.test(formData.password) ? 'valid' : ''}>
-            At least 8 alphabet characters
-              </li>
-                <li className={(formData.password.match(/[0-9]/g) || []).length >= 2 ? 'valid' : ''}>
-                  At least 2 numeric characters
-                    </li>
-                      <li className={/[^a-zA-Z0-9]/.test(formData.password) ? 'valid' : ''}>
-                        At least 1 special symbol
-                        </li>
-                      </ul>
-                    <input type="submit" className="btn solid" value="SIGNUP" />
-                  </form>
-               </div>
+
+          {/* Password Animation when the user click the password field not confirm password */}
+          {isPasswordFocused && (
+            <div className="password-strength-container">
+              <div
+                id="strength-bar"
+                className={`strength-bar ${strengthLevel}`}
+                style={{
+                  width:
+                    strengthLevel === 'weak'
+                      ? '30%'
+                      : strengthLevel === 'fair'
+                      ? '60%'
+                      : strengthLevel === 'strong'
+                      ? '100%'
+                      : '0%',
+                }}
+              >   
+              </div>
+              <div id="password-strength-text" style={{ color: strengthColor }}>
+                {strengthMessage}
+              </div>
             </div>
+          )}
+
+          {isPasswordFocused && ( 
+            <ul className="password-requirements">
+              <li
+                className={
+                  formData.password.length >= 8 && /[a-zA-Z]/.test(formData.password)
+                    ? 'valid'
+                    : ''
+                }
+              >
+                At least 8 alphabet characters
+              </li>
+              <li
+                className={
+                  (formData.password.match(/[0-9]/g) || []).length >= 2 ? 'valid' : ''
+                }
+              >
+                At least 2 numeric characters
+              </li>
+              <li
+                className={/[^a-zA-Z0-9]/.test(formData.password) ? 'valid' : ''}
+              >
+                At least 1 special symbol
+              </li>
+            </ul>
+          )}
+              <div className="input-field">
+                                <i className="fas fa-lock"></i>
+                                <input
+                                    type="password"
+                                    name="confirmpassword"
+                                    placeholder="Confirm Password"
+                                    value={formData.confirmpassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="input-field">
+                                <i className="fas fa-inbox"></i>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <input type="submit" className="btn solid" value="SIGNUP" />
+                        </form>
+                      </div>
+                    </div>
+
+          {/* Sign In and Sign Up Designs */}
           <div className="panels-container">
         <div className="panel left-panel">
       <div className="content">

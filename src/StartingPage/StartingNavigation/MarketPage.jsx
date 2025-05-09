@@ -1,6 +1,3 @@
-//Marketplace Parent File along with the Children Files of
-//Navigation & ProductGrid
-
 import React, { useState, useEffect } from "react";
 // Import Files
 import Navbar from "../../Navigation/NavbarMain";
@@ -10,70 +7,92 @@ import Footer from "../../FooterPages/Footer";
 // Installed Notifications
 import { toast } from "react-hot-toast";
 // Backend Calling
-import { API_BACKENDAPI_URL } from "../../BackendConnector/apiRoutes";
+import { API_BACKENDAPI2_URL } from "../../BackendConnector/apiRoutes";
 
 const MarketPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [cart, setCart] = useState([]); // Cart state
+  const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [products, setProducts] = useState([]);
-  const [token, setToken] = useState("");
+  const [lastMarketplaceId, setLastMarketplaceId] = useState(0);
 
-  // Load token from sessionStorage
+  //Checking if the token has totally saved from the sessionStorage
+  const [token, setToken] = useState("");
   useEffect(() => {
     const storedToken = sessionStorage.getItem("token");
     if (storedToken) {
       setToken(storedToken);
     } else {
-      toast.error("⚠️ No token received. Please sign in again.");
+      toast.error("⚠️ No token found from your sign in. Check your account status by contacting us.");
     }
   }, []);
 
-  // Load cart from sessionStorage on page load
-  useEffect(() => {
-    const savedCart = sessionStorage.getItem("cartItems");
-    if (savedCart) {
+    //Fetching Products from the Rico API of marketplace/laodmore
+    const fetchProducts = async (lastMarketplaceId = null) => {
       try {
-        setCart(JSON.parse(savedCart)); // Load the cart from sessionStorage
-      } catch (err) {
-        console.error("⚠️ Failed to parse cart from session:", err);
+        const response = await fetch(`${API_BACKENDAPI2_URL}/api/marketplace/loadmore`, {
+          method: "POST",
+          headers: {
+            //To accept the string error response I got
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            //Backend will accept the null integer so I place the null value as a 0
+            lastMarketplaceId: lastMarketplaceId,
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error("⚠️ Failed to fetch products. Contact us to fix this.");
+        }
+  
+        console.log("API Response:", response.status);
+        const responseData = await response.json();
+        console.log("Backend Products:", responseData);
+        
+        //Extracting the data from the response into Array
+        const productsData = responseData.data;
+        //Mapping the productsData
+        const filteredProducts = productsData.map((product) => ({
+          id: product.item_id,
+          title: product.title,
+          description: product.description,
+          quantity: product.quantity,
+          price: product.price,
+          status: product.status,
+          dateListed: product.date_created,
+          dateUpdated: product.date_updated,
+          category: product.category,
+          marketplace_Id: product.marketplace_id,
+          userId: product.user_id,
+        }));
+    
+
+        setProducts((filteredProducts));
+      } catch (error) {
+        toast.error("⚠️ Failed to retrieve products in marketplace items.");
       }
-    }
-  }, []);
+    };
+  
+    //if there is token detected the products will be fetched
+    useEffect(() => {
+      if (token) {
+        fetchProducts();
+      }
+    }, [token]);
 
-  // Save cart to sessionStorage whenever it changes
-  useEffect(() => {
-    sessionStorage.setItem("cartItems", JSON.stringify(cart));
-  }, [cart]);
-
-  // Fetch products from the backend
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/ViewMarket`, {
-        headers: { Authorization: `Bearer ${token}` },
+      // Filter products based on searchQuery and selectedCategory
+      const filteredProducts = products.filter((product) => {
+        const matchesSearch = product.title
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        const matchesCategory =
+          !selectedCategory || product.category === selectedCategory;
+        return matchesSearch && matchesCategory;
       });
-  
-      if (!response.ok) {
-        throw new Error("⚠️ Failed to fetch products");
-      }
-  
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("⚠️ Something went wrong while loading products. Check your internet connection.");
-    }
-  };
-
-  
-
-  useEffect(() => {
-    if (token) {
-      fetchProducts();
-    }
-  }, [token]);
 
   // Add product to cart
   const addToCart = (product) => {
@@ -86,7 +105,6 @@ const MarketPage = () => {
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
-    toast.success("🎉 Successfully added to your cart.");
   };
 
   // Add product to wishlist
@@ -100,6 +118,8 @@ const MarketPage = () => {
       return [...prevWishlist, product];
     });
   };
+
+
   return (
     <div className="font-sans">
       <Navbar
@@ -119,10 +139,10 @@ const MarketPage = () => {
         >
           <ProductGrid
             searchQuery={searchQuery}
-            selectedCategory={selectedCategory}
+            // selectedCategory={selectedCategory}
             addToCart={addToCart}
             addToWishlist={addToWishlist}
-            isSidebarOpen={isSidebarOpen}
+            // isSidebarOpen={isSidebarOpen}
             products={products}
           />
         </div>

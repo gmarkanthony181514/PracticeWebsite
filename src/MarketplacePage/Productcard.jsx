@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 //Importing useContext
 import { AppContext } from "../Context/AppContext";
 //Backend Calling
-import { API_BACKENDAPI_URL } from "../BackendConnector/apiRoutes";
+import { API_BACKENDAPI_URL,  API_BACKENDAPI2_URL } from "../BackendConnector/apiRoutes";
 
 const ProductCard = ({ product, addToCart, addToWishlist }) => {
   const [showModal, setShowModal] = useState(false);
@@ -38,7 +38,7 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
       }
   
       // Check if the item is already in the cart
-      if (cartItems.some((item) => item.marketID === product.marketID)) {
+      if (cartItems.some((item) => item.marketplace_Id === product.marketplace_Id)) {
         toast.error("⚠️ This product is already in your cart!");
         return;
       }
@@ -65,51 +65,54 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
     }
   };
 
-//API AddToCart and Error Handling
-const addItemToCart = async (marketID, quantity) => {
-  try {
-    const token = sessionStorage.getItem("token");
-    if (!token) {
-      toast.error("⚠️ You have no access here... Sign in first! ");
-      return;
-    }
+    //API AddToCart and Error Handling
+    const addItemToCart = async (marketplaceId, quantity) => {
 
-    const numericMarketID = parseInt(marketID);
-    const requestBody = {
-      token,
-      marketid: numericMarketID,
-      quantity,
+      try {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+          toast.error("⚠️ You have no access here... Sign in first! ");
+          return;
+        }
+
+        const requestBody = {
+          marketplace_id: marketplaceId,
+          quantity: 1,
+        };
+
+        const response = await fetch(`${API_BACKENDAPI2_URL}/api/Cart/Add`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        console.log("API Response Status:", response.status);
+        const data = await response.json();
+        console.log("API AddToCart: ", data);
+
+        console.log("Marketplace ID:", marketplaceId);
+        console.log("Quantity:", quantity);
+
+        if (response.ok) {
+          if (data === "Item added to cart.") {
+            toast.success("🎉 Item added to cart successfully!");
+          } else if (data === "Cart updated successfully.") {
+            toast.success("🎉 Cart updated successfully!");
+          }
+          // Optionally, refresh the cart items
+          // fetchCartItems();
+        } else {
+          // Handle backend error messages
+          toast.error(`⚠️ ${data}`);
+        }
+      } catch (error) {
+        console.error("Error adding item to cart:", error);
+        toast.error("⚠️ Unable to add item to cart. Please try again.");
+      }
     };
-
-    const response = await fetch(`${API_BACKENDAPI_URL}/api/AddToCart`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    console.log("API Response Status:", response.status);
-    const data = await response.json();
-    console.log("API AddToCart: ", data);
-
-    if (data === "Added to cart") {
-      toast.success(`🎉 Your "${product.title}" has been added to your cart!`);
-      setCartItems((prevItems) => [...prevItems, { ...product, quantity }]);
-    } else if (data === "Market quantity is not enough") {
-      toast.error("⚠️ Not enough stock available.");
-    } else if (data === "You already added it on your cart.") {
-      toast.error("⚠️ You cannot add this item because you already have it.");
-    } else if (data === "Invalid user token") {
-      toast.error("⚠️ Invalid user token. Please sign in again.");
-    } else {
-      toast.error(`⚠️ Error: ${data}`);
-    }
-  } catch (error) {
-    console.error("⚠️ Error adding item to cart:", error);
-    toast.error("⚠️ Unable to add item to cart. Please try again.");
-  }
-};
   
 
   // Wishlist Modal
@@ -182,7 +185,7 @@ const addItemToCart = async (marketID, quantity) => {
               onClick={(e) => {
                 e.stopPropagation();
                 handleAddToCart(); // Only call handleAddToCart
-                addItemToCart(product.marketID, product.quantity); // Call addItemToCart with the correct parameters                
+                addItemToCart(product.marketplace_Id, product.quantity); // Call addItemToCart with the correct parameters                
               }}
             >
               <ShoppingCart size="1.75rem" color="#fff" />
@@ -236,28 +239,43 @@ const addItemToCart = async (marketID, quantity) => {
             />
           </div>
 
-        {/* Product Details Section */}
+          {/* Product Details Section */}
           <div className="md:w-1/2 w-full p-6 flex flex-col justify-between">
             <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-4"><span>{product.title || "No details provided"}</span></h2>
-                <br></br>
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-yellow-400 text-2xl font-semibold">
-                  {product.rating || "No user rate this product"}⭐ 
-                    </span>
-              <span className="text-gray-500 text-lg">
-                   ({product.rating || "0"} user reviews)
-              </span>
-            </div>
-              <span className="text-gray-700 text-lg leading-relaxed mb-4">
+              {/* Product Title */}
+              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+                {product.title || "No details provided"}
+              </h2>
+
+              {/* Product Category */}
+              <div className="flex items-center space-x-2 mb-6">
+                <span className="text-yellow-400 text-2xl font-semibold">
+                  {product.category || "Uncategorized"}
+                </span>
+              </div>
+
+              {/* Product Description */}
+              <h6 className="text-gray-700 text-lg leading-relaxed mb-6">
                 {product.description?.split(" ").slice(0, 30).join(" ") || "No details provided"}
                 {product.description?.split(" ").length > 30 ? "..." : ""}
-              </span>
-                <br></br>
-              <span className="text-lg text-gray-700 mb-5">
+              </h6>
+
+              {/* Product Stock */}
+              <h6 className="text-lg text-gray-700 mb-4">
                 <strong>Stock:</strong> {product.quantity ? `${product.quantity} available` : "Out of stock"}
-              </span>
-          </div>
+              </h6>
+
+              {/* Product Price */}
+              <h6 className="text-lg text-gray-700 mb-4">
+                <strong>Price:</strong> ${product.price ? `${product.price}` : "Free"}
+              </h6>
+
+              {/* Date Listed */}
+              <h6 className="text-lg text-gray-700">
+                <strong>Date Listed:</strong> {product.dateListed ? `${product.dateListed}` : "N/A"}
+              </h6>
+            </div>
+
 
       {/* Button Main Container */}
         <div className="mt-10 relative w-full h-[60px] pb-4">
@@ -281,7 +299,7 @@ const addItemToCart = async (marketID, quantity) => {
         } text-white flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-orange-600 shadow-md`}
         onClick={(e) => {
           handleAddToCart();
-          addItemToCart(product.marketID, product.quantity); // Call addItemToCart with the correct parameters                
+          addItemToCart(product.marketplace_Id, product.quantity); // Call addItemToCart with the correct parameters                
         }}
       >
         <ShoppingCart size={28} />

@@ -1,26 +1,29 @@
 import React, { useEffect } from "react";
+//Link Navigation
 import { Link } from "react-router-dom";
-//Imported Pictures
-import Logo from "../assets/images/landingSignUP/logo.png";
-import Details from "../assets/images/landingSignUP/eventDetails.svg";
-//Imported Files
+//Import Images
+import CompanyLogo from "../assets/images/landingSignUP/logo.png";
+import PokemonEvent from "../assets/images/landingSignUP/eventDetails.svg";
+//Hard Coded CSS
 import "./CSS/landingpage.css";
 
-function LandingPage() {
-  //Javascript handler
+
+const LandingPage = () => {
+
+  //Purpose to do a whole body fulfilled not with just a root container based from React Default
   useEffect(() => {
     document.body.classList.add("xure-landing-body");
-
     return () => {
       document.body.classList.remove("xure-landing-body");
     };
   }, []);
+  
 
   return (
     <div className="xure-landing">
       <header className="xure-header">
         <div className="xure-logo">
-          <img src={Logo} alt="Logo" />
+          <img src={CompanyLogo} alt="Logo" />
             </div>
           <nav className="xure-nav">
             <ul>
@@ -37,7 +40,7 @@ function LandingPage() {
         <Link to="/loginregister" className="xure-btn">𝗚𝗘𝗧 𝗦𝗧𝗔𝗥𝗧𝗘𝗗</Link>
       </div>
       <div className="xure-image w-1/2 flex justify-center">
-    <img src={Details} alt="Event Details" className="max-w-full h-auto" />
+    <img src={PokemonEvent} alt="Event Details" className="max-w-full h-auto" />
   </div>
     </div>
   </div>

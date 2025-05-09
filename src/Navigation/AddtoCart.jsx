@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from "lucide-react";
 //Backend Calling
-import { API_BACKENDAPI_URL } from "../BackendConnector/apiRoutes";
+import { API_BACKENDAPI_URL, API_BACKENDAPI2_URL } from "../BackendConnector/apiRoutes";
 //Installed Notification
 import { toast } from 'react-hot-toast';
 import Alertmessage from "../AlertModalNotif/Alertmessage";
@@ -23,29 +23,35 @@ const AddtoCart = ({ onCartSync }) => {
       try {
         const token = sessionStorage.getItem("token");
         if (!token) {
-          toast.error("⚠️ You need to be logged in to view your cart.");
+          toast.error("⚠️ You need to be signed in to view your cart.");
           return;
         }
-
-        const response = await fetch(`${API_BACKENDAPI_URL}/api/ViewUserCart`, {
-          method: "POST",
+  
+        const response = await fetch(`${API_BACKENDAPI2_URL}/api/Cart/Get`, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ token }),
         });
-    
+  
         if (!response.ok) {
           throw new Error("Failed to fetch cart");
         }
-    
+  
         console.log("API Response Status:", response.status);
         const data = await response.json();
-        console.log("API Response Data:",data);
-
+        console.log("API Response Data:", data);
+  
         if (Array.isArray(data)) {
-          setCartItems(data);
-
+          // Ensure quantity starts at 1 for each item
+          const updatedCartItems = data.map((item) => ({
+            ...item,
+            quantity: item.quantity > 0 ? item.quantity : 1, // Default to 1 if quantity is not valid
+          }));
+  
+          setCartItems(updatedCartItems);
+  
           if (data.length > 0) {
             const sessionId = data[0].CartSessionID || "No ID";
             setCartSessionId(sessionId);
@@ -57,9 +63,9 @@ const AddtoCart = ({ onCartSync }) => {
         toast.error("⚠️ Unable to fetch cart. Please try again.");
       }
     };
-          fetchCart();
-    }, []);
-
+  
+    fetchCart();
+  }, []);
     
   const total = cartItems.reduce((sum, item) => {
     const quantity = parseInt(item.quantity);
@@ -69,15 +75,15 @@ const AddtoCart = ({ onCartSync }) => {
 
   const updateQuantity = async (id, change) => {
     try {
-      const numericId = parseInt(id, 10) || id; // Parse id as a number if possible
-      const cartItem = cartItems.find((item) => item.MarketID === numericId);
+      const numericId = parseInt(id); // Parse id as a number if possible
+      const cartItem = cartItems.find((item) => item.marketplace_id === numericId);
   
       if (!cartItem || !cartItem.CartID) {
         toast.error("⚠️ Invalid cart item. Please try again.");
         return;
       }
 
-      const newQuantity = cartItem.Quantity + change;
+      const newQuantity = cartItem.quantity + change;
       if (newQuantity < 1) {
         toast.error("⚠️ Quantity cannot be less than 1.");
         return;
@@ -106,7 +112,7 @@ const AddtoCart = ({ onCartSync }) => {
       if (data === "Cart edited") {
         setCartItems((prevCart) =>
           prevCart.map((item) =>
-            item.MarketID === numericId
+            item.marketplace_id === numericId
               ? { ...item, Quantity: newQuantity }
               : item
           )
@@ -122,14 +128,8 @@ const AddtoCart = ({ onCartSync }) => {
     }
   };
 
-  
-  const removeFromCart = async (cartid) => {
-    const numericCartId = parseInt(cartid);
-    if (isNaN(numericCartId)) {
-      toast.error("⚠️ Invalid cart item. Please try again.");
-      return;
-    }
-  
+  //API RemoveFromCart
+  const removeFromCart = async (cartId) => {
     try {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -138,14 +138,14 @@ const AddtoCart = ({ onCartSync }) => {
       }
   
       const requestBody = {
-        token,
-        cartid: numericCartId,
+        cart_id: cartId,
       };
   
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/RemoveFromCart`, {
-        method: "POST",
+      const response = await fetch(`${API_BACKENDAPI2_URL}/api/Cart/Remove`, {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
       });
@@ -154,10 +154,8 @@ const AddtoCart = ({ onCartSync }) => {
       const data = await response.text();
       console.log("API Response Data:", data);
   
-      if (response.status === 200 && data === "Removed from cart") {
-        setCartItems((prevCart) =>
-          prevCart.filter((item) => parseInt(item.cartid) !== numericCartId)
-        );
+      if (response.ok && data === "Item removed from cart.") {
+        setCartItems((prevCart) => prevCart.filter((item) => item.cart_id !== cartId));
         toast.success("Item removed from cart successfully!");
       } else {
         toast.error(`⚠️ ${data}`);
@@ -167,7 +165,8 @@ const AddtoCart = ({ onCartSync }) => {
       toast.error("⚠️ Unable to remove item from cart. Please try again.");
     }
   };
-  
+
+  //API RemoveAllFromCart
   const removeAllFromCart = async () => {
     const token = sessionStorage.getItem("token");
     const cartSessionId = sessionStorage.getItem("cartSessionId");
@@ -266,20 +265,20 @@ const AddtoCart = ({ onCartSync }) => {
           <div className="flex-1 overflow-y-auto pr-4">
             <div className="max-h-[calc(100vh-200px)]">
             {cartItems.map((item) => (
-              <div key={`${item.CartID}-${item.MarketID}`} className="flex items-center border-b py-5 space-x-6">
+              <div key={`${item.cart_id}-${item.marketplace_id}`} className="flex items-center border-b py-5 space-x-6">
                 <img 
-                  src={`data:image/jpeg;base64,${item.Image}` || "default-image.png"} 
-                  alt={item.Model} 
+                  src={item.image} 
+                  alt={item.title} 
                   className="w-24 h-24 rounded-md object-cover" 
                 />
                 <div className="flex-1">
-                <p className="text-lg font-medium">{item.Brand || "No Brand"}</p>
-                  <p className="text-lg font-medium">{item.Model || "No Model"}</p>
-                  <p className="text-xl font-bold">${(item.Price * item.Quantity || 0).toFixed(2)}</p>
+                <p className="text-lg font-medium">{item.title || "No Title"}</p>
+                  <p className="text-lg font-medium">{item.description || "No Description"}</p>
+                  <p className="text-xl font-bold">${(item.price * item.quantity).toFixed(2)}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => updateQuantity(item.MarketID, -1)}
+                  onClick={() => updateQuantity(item.marketplace_id, -1)}
                   className="w-14 h-10 bg-red-500 text-white rounded-md text-2xl font-bold transition duration-300 ease-in-out hover:bg-red-600 active:bg-red-700"
                 >
                   -
@@ -288,7 +287,7 @@ const AddtoCart = ({ onCartSync }) => {
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]"
-                    value={inputValues[item.MarketID] !== undefined ? inputValues[item.MarketID] : item.Quantity}
+                    value={inputValues[item.marketplace_id] !== undefined ? inputValues[item.marketplace_id] : item.quantity}
                     onClick={() => openEditModal(item)}
                     onChange={(e) => {
                       const newValue = e.target.value;
@@ -300,11 +299,11 @@ const AddtoCart = ({ onCartSync }) => {
                         }
                         setInputValues((prev) => ({
                           ...prev,
-                          [item.MarketID]: newValue,
+                          [item.marketplace_id]: newValue,
                         }));
                         setCartItems((prevCart) =>
                           prevCart.map((cartItem) =>
-                            cartItem.MarketID === item.MarketID
+                            cartItem.marketplace_id === item.marketplace_id
                               ? { ...cartItem, Quantity: parsed }
                               : cartItem
                           )
@@ -312,25 +311,25 @@ const AddtoCart = ({ onCartSync }) => {
                       }
                     }}
                     onBlur={() => {
-                      const numericId = item.MarketID;
-                      const cartItem = cartItems.find((item) => item.MarketID === numericId);
-                      const newQuantity = parseInt(inputValues[numericId], 10);
+                      const numericId = item.marketplace_id;
+                      const cartItem = cartItems.find((item) => item.marketplace_id === numericId);
+                      const newQuantity = parseInt(inputValues[numericId]);
                   
-                      if (newQuantity && newQuantity !== cartItem.Quantity) {
-                        updateQuantity(numericId, newQuantity - cartItem.Quantity);
+                      if (newQuantity && newQuantity !== cartItem.quantity) {
+                        updateQuantity(numericId, newQuantity - cartItem.quantity);
                       }
                     }}
                     className="w-20 h-10 text-center text-xl font-medium rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
                   />
               <button
-                onClick={() => updateQuantity(item.MarketID, 1)}
+                onClick={() => updateQuantity(item.marketplace_id, 1)}
                 className="w-14 h-10 bg-green-500 text-white rounded-md text-2xl font-bold transition duration-300 ease-in-out hover:bg-green-600 active:bg-green-700"
               >
                 +
               </button>
                 </div>
                 <button
-                  onClick={() => removeFromCart(item.CartID)}
+                  onClick={() => removeFromCart(item.cart_id)}
                   className="w-14 h-10 bg-red-500 text-white rounded-md text-2xl font-bold transition duration-300 ease-in-out hover:bg-gray-600 active:bg-gray-700"
                 >
                   🗑
