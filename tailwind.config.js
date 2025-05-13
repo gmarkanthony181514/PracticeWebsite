@@ -3,16 +3,13 @@ export default {
   theme: {
     extend: {
       keyframes: {
-        pulseSlow: {
-          "0%, 100%": { opacity: "1", transform: "scale(1)" },
-          "50%":    { opacity: "0.7", transform: "scale(1.1)" },
+        fadeIn: {
+          "0%": { opacity: 0, transform: "translateY(10px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
         },
       },
       animation: {
-        "pulse-slow": "pulseSlow 2s ease-in-out infinite",
-      },
-      fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        fadeIn: "fadeIn 0.5s ease-out forwards", // Fade-in animation
       },
     },
   },

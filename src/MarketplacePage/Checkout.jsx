@@ -1,58 +1,61 @@
 import {  useState } from 'react';
+//useLocation for Online GoogleMap
 import { useLocation, useNavigate } from 'react-router-dom';
+//Package Notication
 import { toast } from 'react-hot-toast';
-import { API_BACKENDAPI_URL, API_BACKENDAPI2_URL } from '../BackendConnector/apiRoutes';
+//Backend Connector
+import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnector/apiRoutes';
 
-const Checkout = () => {
-  const location = useLocation();
-  const { cartItems = [], total = 0, cartSessionId } = location.state || {};
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactionHistory, setTransactionHistory] = useState([]);
-  const [showTransactionHistory, setShowTransactionHistory] = useState(false);
-  const deliveryFee = 9.99;
-  const vat = total * 0.00;
-  const grandTotal = total + vat + deliveryFee;
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('customerDetails');
+  const Checkout = () => {
+    const location = useLocation();
+    const { cartItems = [], total = 0 } = location.state || {};
+    const [isLoading, setIsLoading] = useState(false);
+    const [transactionHistory, setTransactionHistory] = useState([]);
+    const [showTransactionHistory, setShowTransactionHistory] = useState(false);
+    const deliveryFee = 9.99;
+    const vat = total * 0.00;
+    const grandTotal = total + vat + deliveryFee;
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('customerDetails');
 
+    //Checking if there is token receive from the sessionStorage
+      const getSessionData = () => {
+        const token = sessionStorage.getItem("token");
+    
+          if (!token) {
+            toast.error("⚠️ Before ording please sign in first! ");
+              setTimeout(() => {
+                navigate("/loginregister");
+                }, 2500); 
+            return null;
+          }
+          return { token };
+        };
   
-  const getSessionData = () => {
-    const token = sessionStorage.getItem("token");
-    // const cartSession = sessionStorage.getItem("cartSessionId");
-  
-    if (!token) {
-      toast.error("⚠️ You need to be logged in to place an order.");
-      return null;
+    //Place Order Button Functionalities
+      const handlePlaceOrder = async () => {
+    //Applying the getSessionData functionalities
+      const sessionData = getSessionData();
+  //Double Checking if the Token are still saved on the sessionStorage
+    if (!sessionData) {
+      toast.error(" ⚠️ Your sign in has been expired! Please sign in again...")
+        setTimeout(() => {
+          navigate("/loginregister");
+        }, 2500); 
+    return;
     }
-  
-    // if (!cartSession || cartSession === "No ID") {
-    //   toast.error("⚠️ Invalid cart session ID detected.");
-    //   return null;
-    // }
-  
-    return { token };
-  };
-  
-  const handlePlaceOrder = async () => {
-    const sessionData = getSessionData();
-    if (!sessionData) return;
-  
-    // if (!cartSessionId) {
-    //   toast.error("⚠️ Invalid cart session. Please try again.");
-    //   return;
-    // }
 
-    const { token } = sessionData;
-
-    // const { cartSession } = sessionData;
+  //Extracting the token
+  const { token } = sessionData;
+  //Getting Cart Items from the API Body
     const requestBody = {
       cartItems,
     };
-  
     setIsLoading(true);
   
+  //Rico API Endpoint for api/order/checkout
     try {
-      const response = await fetch(`${API_BACKENDAPI2_URL}/api/order/checkout`, {
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/order/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,8 +68,8 @@ const Checkout = () => {
       const data = await response.json();
       console.log("API Response Data:", data);
   
-      if (data === "Order placed successfully" || data.message === "Order placed successfully") {
-        toast.success("🎉 Order placed successfully! Redirecting to Marketplace...");
+      if (data ===  "Order placed successfully.") {
+        toast.success("🎉 Your order has been placed successfully! Redirecting to Marketplace...");
         setTimeout(() => {
           navigate("/marketplace");
         }, 1500);
@@ -98,7 +101,7 @@ const Checkout = () => {
     setIsLoading(true);
   
     try {
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/CancelOrder`, {
+      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/CancelOrder`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +137,6 @@ const Checkout = () => {
 
   //NO API YET FOR THIS
   const handleViewTransactionHistory = async () => {
-    console.log("View Transaction History button clicked");
 
     const token = sessionStorage.getItem("token");
     if (!token || token.trim() === "") {
@@ -146,12 +148,10 @@ const Checkout = () => {
       token,
     };
 
-    console.log("Request Body:", requestBody);
-
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/ViewTransactionHistory`, {
+      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/ViewTransactionHistory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +190,6 @@ const Checkout = () => {
       <h2 className="text-center text-xl font-semibold">CHECKOUT</h2>
       <div className="w-full h-px bg-gray-300"></div>
       <form className="space-y-4">
-
 
     {/* Shipping Country Dropdown */}
     <div className="space-y-2">

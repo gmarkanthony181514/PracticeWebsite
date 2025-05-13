@@ -7,7 +7,7 @@ import ProductCard from "../MarketplacePage/Productcard";
 import SectionTitle from "../MarketplacePage/ExtraIdeas/SectionTitle";
 import Alertmessage from "../AlertModalNotif/Alertmessage";
 //Backend Calling
-import { API_BACKENDAPI_URL, API_BACKENDAPI2_URL } from '../BackendConnector/apiRoutes';
+import { API_BACKENDRICOAPI_URL } from '../BackendConnector/apiRoutes';
 //Installed Notification
 import { toast } from 'react-hot-toast';
 
@@ -27,6 +27,7 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
     category: "",
     quantity: "",
     price: "",
+    image: "",
   });
 
   
@@ -40,7 +41,7 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
         }
 
   //API Calling Endpoints
-        const response = await fetch(`${API_BACKENDAPI2_URL}/api/item/loadmore`, {
+        const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/item/loadmore`, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
@@ -57,10 +58,12 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
         const data = await response.json();
         console.log("ViewItem Response Data", data);
 
+        const createdItems = data.data;
+
         // Ensure `result.data` is an array before appending
-        if (Array.isArray(data.data)) {
-          setItems((prevItems) => [...prevItems, ...data.data]);
-          setLocalProducts((prevProducts) => [...prevProducts, ...data.data]);
+        if (Array.isArray(createdItems)) {
+          setItems((prevItems) => [...prevItems, ...createdItems]);
+          setLocalProducts((prevProducts) => [...prevProducts, ...createdItems]);
         } else {
           console.error("⚠️ Unexpected data format:", data);
           toast.error("⚠️ Unexpected data format received from the server.");
@@ -90,10 +93,10 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
       }
 
       // Validate Input Fields
-        const { title, description, category, quantity, price } = newProduct;
-          if (!title || !description || !category || !quantity || !price) {
-            toast.error("⚠️ All fields are required.");
-          return;
+         const { title, description, category, quantity, price, image } = newProduct;
+          if (!title || !description || !category || !quantity || !price || !image) {
+            toast.error("⚠️ All fields, including the image, are required.");
+            return;
           }
       
           if (isNaN(quantity) || parseInt(quantity) <= 0) {
@@ -113,9 +116,12 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
         category,
         quantity: parseInt(quantity),
         price: parseFloat(price),
+        image_base64: image,
       };
 
-      const response = await fetch(`${API_BACKENDAPI2_URL}/api/item`, {
+      console.log("Creating Item Payload:", creatingItem); // Debugging
+
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/item`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,14 +130,14 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
         body: JSON.stringify(creatingItem),
       });
 
-      console.log("API Response", response.status);
+      console.log("API Response::", response.status);
       const data = await response.json();
-      console.log("Backend Item", data);
+      console.log("Backend Item:", data);
 
       if (data === "Item created successfully") {
         toast.success("🎉 Item created successfully!");
         setShowAddItemModal(false);
-        setNewProduct({ title: "", description: "", category: "", quantity: "", price: "" });
+        setNewProduct({ title: "", description: "", category: "", quantity: "", price: "", image: "" });
         fetchItems();
       } else {
         toast.error(`⚠️ ${data}`);
@@ -176,7 +182,7 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
             }
     
             // API Call to List Item
-            const response = await fetch(`${API_BACKENDAPI2_URL}/api/marketplace/add`, {
+            const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/marketplace/add`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -231,7 +237,7 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
             }
     
             // API Call to Delete Item
-            const response = await fetch(`${API_BACKENDAPI2_URL}/api/Deleteitem`, {
+            const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/Deleteitem`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -278,7 +284,7 @@ const filteredProducts = localProducts.filter(
       >
         <ChevronLeft className="w-6 h-6 text-white" />
       </button>
-      <SectionTitle title="My Items" mb="mb-11" />
+        <SectionTitle title="Your Items" mb="mb-11" />
       <br />
         <div className="flex justify-center mb-6">
           <button
@@ -307,7 +313,7 @@ const filteredProducts = localProducts.filter(
       {filteredProducts.slice(0, visibleProducts).map((product) => (
         <div key={product.item_id} className="relative">
           <ProductCard
-            product={{ ...product, status: product.status }}
+            product={{ ...product, status: product.status, image: product.image_base64 }}
             addToCart={(item) => toast.success(`Added ${item.title} to cart!`)}
             addToWishlist={(item) => toast.success(`Added ${item.title} to wishlist!`)}
           />
@@ -377,15 +383,19 @@ const filteredProducts = localProducts.filter(
                   accept="image/*"
                   className="hidden"
                   id="fileUpload"
-                  onChange={async (e) => {
+                  onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      setFileName(file.name); // Update the file name state
+                      if (file.size > 1024 * 1024) { // Limit to 1MB
+                        toast.error("⚠️ File size exceeds 1MB. Please upload a smaller file.");
+                        return;
+                      }
+                      setFileName(file.name);
                       const reader = new FileReader();
                       reader.onloadend = () => {
                         setNewProduct((prev) => ({
                           ...prev,
-                          image: reader.result, // Base64 string
+                          image: reader.result, // Ensure this includes the MIME type
                         }));
                       };
                       reader.readAsDataURL(file);

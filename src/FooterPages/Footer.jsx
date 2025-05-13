@@ -1,7 +1,5 @@
-import React from "react";
-
 const Footer = ({ companyName }) => {
-  const currentYear = new Date().getFullYear();
+const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-gradient-to-r from-gray-800 to-black text-white text-center p-4 mt-8">
@@ -36,12 +34,12 @@ const Footer = ({ companyName }) => {
 
         <div className="mt-6">
           <h3 className="text-lg font-semibold">Subscribe to our Newsletter</h3>
-          <form className="flex justify-center mt-2">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
+            <form className="flex justify-center mt-2">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+              />
             <button
               type="submit"
               className="px-4 py-2 bg-purple-600 text-white rounded-r-lg hover:bg-purple-700 transition"

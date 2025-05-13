@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 //Importing useContext
 import { AppContext } from "../Context/AppContext";
 //Backend Calling
-import { API_BACKENDAPI_URL,  API_BACKENDAPI2_URL } from "../BackendConnector/apiRoutes";
+import { API_BACKENDRICOAPI_URL } from "../BackendConnector/apiRoutes";
 
 const ProductCard = ({ product, addToCart, addToWishlist }) => {
   const [showModal, setShowModal] = useState(false);
@@ -80,7 +80,7 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
           quantity: 1,
         };
 
-        const response = await fetch(`${API_BACKENDAPI2_URL}/api/Cart/Add`, {
+        const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/Cart/Add`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
@@ -93,23 +93,16 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
         const data = await response.json();
         console.log("API AddToCart: ", data);
 
-        console.log("Marketplace ID:", marketplaceId);
-        console.log("Quantity:", quantity);
-
         if (response.ok) {
           if (data === "Item added to cart.") {
             toast.success("🎉 Item added to cart successfully!");
           } else if (data === "Cart updated successfully.") {
             toast.success("🎉 Cart updated successfully!");
           }
-          // Optionally, refresh the cart items
-          // fetchCartItems();
         } else {
-          // Handle backend error messages
           toast.error(`⚠️ ${data}`);
         }
       } catch (error) {
-        console.error("Error adding item to cart:", error);
         toast.error("⚠️ Unable to add item to cart. Please try again.");
       }
     };
@@ -159,10 +152,16 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
 
         {/* Image */}
         <div className="mb-5 w-full h-[420px] overflow-hidden rounded-xl relative group">
-          <motion.img
-            src={product.image}
-            alt={product.title}
-            className="w-full h-[450px] object-cover"
+        <motion.img
+          src={
+            product.image
+              ? product.image.startsWith("data:image/")
+                ? product.image
+                : `data:image/jpeg;base64,${product.image}`
+              : "defaultImage.jpg" // Fallback to a default image
+          }
+          alt={product.title || "Product Image"}
+          className="w-full h-[450px] object-cover"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           />
@@ -233,8 +232,14 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
         {/* Product Modal Image Section */}
           <div className="md:w-1/2 w-full flex justify-center items-center p-6">
             <img
-              src={product.image}
-              alt={product.title}
+              src={
+                product.image
+                  ? product.image.startsWith("data:image/")
+                    ? product.image // If it's already a valid Base64 string with a prefix
+                    : `data:image/jpeg;base64,${product.image}` // Add the prefix if it's a plain Base64 string
+                  : "defaultImage.jpg" // Fallback to a default image
+              }
+              alt={product.title || "Product Image"}
               className="object-contain h-60 w-60 md:h-96 md:w-96 rounded-lg shadow-lg"
             />
           </div>

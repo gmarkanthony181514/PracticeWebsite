@@ -10,10 +10,10 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://192.168.100.225:50619/api/login", // Your backend URL
+        target: "http://192.168.100.225:50619/api/login",
         changeOrigin: true,
-        secure: false, // Disable SSL verification if needed
-        rewrite: (path) => path.replace(/^\/api/, "/api"), // Ensures correct routing
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, "/api"),
       }
     }
   }

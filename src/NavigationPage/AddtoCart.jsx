@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from "lucide-react";
 //Backend Calling
-import { API_BACKENDAPI_URL, API_BACKENDAPI2_URL } from "../BackendConnector/apiRoutes";
+import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from "../BackendConnector/apiRoutes";
 //Installed Notification
 import { toast } from 'react-hot-toast';
+//Syncing with another files
 import Alertmessage from "../AlertModalNotif/Alertmessage";
+import SectionTitle from "../MarketplacePage/ExtraIdeas/SectionTitle";
 
 const AddtoCart = ({ onCartSync }) => {
   const [cartSessionId, setCartSessionId] = useState(null);
@@ -27,14 +29,15 @@ const AddtoCart = ({ onCartSync }) => {
           return;
         }
   
-        const response = await fetch(`${API_BACKENDAPI2_URL}/api/Cart/Get`, {
-          method: "GET",
+        const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/cart/loadmore`, {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({}),
         });
-  
+
         if (!response.ok) {
           throw new Error("Failed to fetch cart");
         }
@@ -42,29 +45,29 @@ const AddtoCart = ({ onCartSync }) => {
         console.log("API Response Status:", response.status);
         const data = await response.json();
         console.log("API Response Data:", data);
-  
-        if (Array.isArray(data)) {
-          // Ensure quantity starts at 1 for each item
-          const updatedCartItems = data.map((item) => ({
+
+        //Making the situation not to be confusing
+        const addToCartFetch = data.data;
+
+      // Access the `data` property of the API response
+        if (Array.isArray(data.data)) {
+          const updatedCartItems = addToCartFetch.map((item) => ({
             ...item,
             quantity: item.quantity > 0 ? item.quantity : 1, // Default to 1 if quantity is not valid
           }));
-  
+
           setCartItems(updatedCartItems);
-  
-          if (data.length > 0) {
-            const sessionId = data[0].CartSessionID || "No ID";
-            setCartSessionId(sessionId);
-            sessionStorage.setItem("cartSessionId", sessionId);
-          }
+          console.log("Updated Cart Items:", updatedCartItems);
+
+        } else {
+          console.error("Unexpected API response format:", data);
         }
       } catch (error) {
         console.error("Error fetching cart:", error);
         toast.error("⚠️ Unable to fetch cart. Please try again.");
       }
     };
-  
-    fetchCart();
+      fetchCart();
   }, []);
     
   const total = cartItems.reduce((sum, item) => {
@@ -98,7 +101,7 @@ const AddtoCart = ({ onCartSync }) => {
         minus: change < 0 ? true : null,
       };
   
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/EditCart`, {
+      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/EditCart`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -136,13 +139,13 @@ const AddtoCart = ({ onCartSync }) => {
         toast.error("⚠️ You need to be logged in to remove items from your cart.");
         return;
       }
-  
+
       const requestBody = {
-        cart_id: cartId,
-      };
+        item_id: cartId,
+      }
   
-      const response = await fetch(`${API_BACKENDAPI2_URL}/api/Cart/Remove`, {
-        method: "DELETE",
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/Deleteitem`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -187,7 +190,7 @@ const AddtoCart = ({ onCartSync }) => {
     };
   
     try {
-      const response = await fetch(`${API_BACKENDAPI_URL}/api/RemoveAllFromCart`, {
+      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/RemoveAllFromCart`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -261,7 +264,7 @@ const AddtoCart = ({ onCartSync }) => {
         <ChevronLeft className="w-6 h-6 text-white" />
       </button>
       <div className="w-full min-h-screen bg-gray-100 p-8 flex flex-col">
-      <h2 className="text-2xl font-bold mb-6 border-b pb-3 text-center">MY CART</h2>
+        <SectionTitle title="Your Cart" mb="mb-12" />
           <div className="flex-1 overflow-y-auto pr-4">
             <div className="max-h-[calc(100vh-200px)]">
             {cartItems.map((item) => (
@@ -272,8 +275,8 @@ const AddtoCart = ({ onCartSync }) => {
                   className="w-24 h-24 rounded-md object-cover" 
                 />
                 <div className="flex-1">
-                <p className="text-lg font-medium">{item.title || "No Title"}</p>
-                  <p className="text-lg font-medium">{item.description || "No Description"}</p>
+                <p className="text-lg font-medium">{item.title}</p>
+                  <p className="text-lg font-medium">{item.category}</p>
                   <p className="text-xl font-bold">${(item.price * item.quantity).toFixed(2)}</p>
                 </div>
                 <div className="flex items-center space-x-2">

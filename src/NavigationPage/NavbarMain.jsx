@@ -8,6 +8,8 @@ import { Search, ShoppingCart, User, Heart } from "lucide-react";
 import { toast } from 'react-hot-toast';
 //useContext
 import { AppContext } from "../Context/AppContext";
+//Backend Connector
+import { API_BACKENDRICOAPI_URL } from "../BackendConnector/apiRoutes";
 
 const Navbar = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,14 +36,47 @@ const Navbar = ({ onSearch }) => {
   }, []);
 
   //Search bar function
-  const handleSearch = (query) => {
-    try {
-      setSearchQuery(query);
-      onSearch(query);
-    } catch (error) {
-        toast.error(" ⚠️ Slow connection detected! ");
-    }
-  };
+    const handleSearch = async (query) => {
+      try {
+        setSearchQuery(query || "");
+
+        // Get the JWT token from sessionStorage
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+          toast.error("⚠️ You must be logged in to search.");
+          return;
+        }
+
+        // Prepare the request body
+        const requestBody = {
+          title: query || "",
+        };
+
+        // Make the API call
+        const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/marketplace/search`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Search Results:", data);
+
+          // Pass the search results to the parent component
+          onSearch(data);
+        } else {
+          const errorText = await response.text();
+          toast.error(`⚠️ Failed to search: ${errorText}`);
+        }
+      } catch (error) {
+        toast.error("⚠️ Slow connection detected! Please try again.");
+        console.error("Search Error:", error);
+      }
+    };
 
   // Log out function
   const handleLogout = () => {
@@ -91,26 +126,21 @@ const Navbar = ({ onSearch }) => {
                𝑭𝒂𝒌𝒆 𝑺𝒕𝒐𝒓𝒆
             </Link>
           </div>
-            <div className="relative w-1/3">
-              <input
-                type="text"
-                  placeholder="   Search products here..."
-                    className="w-full h-[44px] pl-6 pr-10 py-2 rounded-lg shadow-md"
-                      value={searchQuery}
-                        onChange={(e) => handleSearch(e.target.value)}
-                      />
-                  <button 
-                    className="absolute right-4 top-1/2 -translate-y-1/2" 
-                      onClick={() => {
-                    try {
-                      handleSearch(searchQuery);
-                        } catch (error) {
-                          toast.error(" ⚠️ Slow connection detected...");
-                        }
-                      }}>
-                  <Search size='22px' color="#272343" />
-              </button>
-           </div>
+          <div className="relative w-1/3">
+            <input
+              type="text"
+              placeholder="   Search products here..."
+              className="w-full h-[44px] pl-6 pr-10 py-2 rounded-lg shadow-md"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)} // Update the state
+            />
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2"
+              onClick={() => handleSearch(searchQuery)} // Trigger the search
+            >
+              <Search size="22px" color="#272343" />
+            </button>
+          </div>
         <div className="relative">
           <Link 
             to="/addtocart" 

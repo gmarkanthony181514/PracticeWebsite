@@ -4,7 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useNavigate } from 'react-router-dom';
 //Backend Connector
 import axios from 'axios';
-import { API_BACKENDAPI2_URL} from '../BackendConnector/apiRoutes';
+import { API_BACKENDRICOAPI_URL} from '../BackendConnector/apiRoutes';
 //Importing Notification Package
 import { toast } from 'react-hot-toast';
 //Importing Images
@@ -176,7 +176,7 @@ const LogInRegister = () => {
 
     //Calling Rico API of Createuser
     try {
-     const response = await axios.post(`${API_BACKENDAPI2_URL}/api/Createuser`, 
+     const response = await axios.post(`${API_BACKENDRICOAPI_URL}/api/Createuser`, 
       {
         username: formData.username,
         password: formData.password,
@@ -216,7 +216,7 @@ const LogInRegister = () => {
 
     //Calling Rico API of Login
     try {
-    const response = await axios.post(`${API_BACKENDAPI2_URL}/api/Login`, {
+    const response = await axios.post(`${API_BACKENDRICOAPI_URL}/api/Login`, {
         username: formData.username,
         password: formData.password,
     });

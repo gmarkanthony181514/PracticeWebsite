@@ -1,5 +1,3 @@
-import React from 'react';
-
 const PrivacyPolicy = () => (
   <main className="bg-gradient-to-b from-gray-50 to-white text-gray-800 py-16 px-6 md:px-20">
     <h1 className="text-4xl font-bold mb-6 text-center">Privacy Policy</h1>
@@ -25,28 +23,24 @@ const PrivacyPolicy = () => (
       <p>
         We collect data you provide directly (such as name and email), as well as usage data from app interactions for analytics and improvement.
       </p>
-
       <h2 id="how-we-use-it" className="text-2xl font-semibold mt-6 flex items-center">
         <span className="text-purple-600 mr-2">🔧</span> How We Use It
       </h2>
       <p>
         Your data helps us verify accounts, improve services, prevent fraud, and communicate with users. We do not sell your data.
       </p>
-
       <h2 id="data-protection" className="text-2xl font-semibold mt-6 flex items-center">
         <span className="text-purple-600 mr-2">🔒</span> Data Protection
       </h2>
       <p>
         We apply industry-standard security to protect your data. You control your data preferences via app settings.
       </p>
-
       <h2 id="third-party-services" className="text-2xl font-semibold mt-6 flex items-center">
         <span className="text-purple-600 mr-2">🤝</span> Third-Party Services
       </h2>
       <p>
         We may use third-party tools (like analytics) but ensure your privacy remains protected through strict data agreements.
       </p>
-
       <p className="mt-6">
         By using our apps, you consent to this Privacy Policy. For full legal details, please refer to our complete policy at 
         <a 
@@ -59,7 +53,7 @@ const PrivacyPolicy = () => (
         </a>.
       </p>
     </div>
-
+    
     <div className="mt-8 text-center">
       <button
         className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition"

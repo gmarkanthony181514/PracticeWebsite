@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 // Import Files
-import Navbar from "../../Navigation/NavbarMain";
+import Navbar from "../../NavigationPage/NavbarMain";
 import Sidebar from "../../MarketplacePage/ExtraIdeas/Sidebar";
 import ProductGrid from "../../MarketplacePage/Productgrid";
 import Footer from "../../FooterPages/Footer";
 // Installed Notifications
 import { toast } from "react-hot-toast";
 // Backend Calling
-import { API_BACKENDAPI2_URL } from "../../BackendConnector/apiRoutes";
+import { API_BACKENDRICOAPI_URL } from "../../BackendConnector/apiRoutes";
 
 const MarketPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,47 +16,43 @@ const MarketPage = () => {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [products, setProducts] = useState([]);
-  const [lastMarketplaceId, setLastMarketplaceId] = useState(0);
 
   //Checking if the token has totally saved from the sessionStorage
   const [token, setToken] = useState("");
-  useEffect(() => {
-    const storedToken = sessionStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-    } else {
-      toast.error("⚠️ No token found from your sign in. Check your account status by contacting us.");
-    }
-  }, []);
+    useEffect(() => {
+      const storedToken = sessionStorage.getItem("token");
+      if (storedToken) {
+        setToken(storedToken);
+      } else {
+        toast.error("⚠️ No token found from your sign in. Check your account status by contacting us.");
+      }
+    }, []);
 
     //Fetching Products from the Rico API of marketplace/laodmore
     const fetchProducts = async (lastMarketplaceId = null) => {
       try {
-        const response = await fetch(`${API_BACKENDAPI2_URL}/api/marketplace/loadmore`, {
+        const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/marketplace/loadmore`, {
           method: "POST",
           headers: {
             //To accept the string error response I got
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            //Backend will accept the null integer so I place the null value as a 0
-            lastMarketplaceId: lastMarketplaceId,
-          }),
+          body: JSON.stringify({}),
         });
   
         if (!response.ok) {
           throw new Error("⚠️ Failed to fetch products. Contact us to fix this.");
         }
-  
-        console.log("API Response:", response.status);
+
+        console.log("API Response Status:", response.status);
         const responseData = await response.json();
-        console.log("Backend Products:", responseData);
-        
+        console.log("Backend Data:", responseData);
+
         //Extracting the data from the response into Array
-        const productsData = responseData.data;
+        const fetchingProducts = responseData.data;
         //Mapping the productsData
-        const filteredProducts = productsData.map((product) => ({
+        const filteredProducts = fetchingProducts.map((product) => ({
           id: product.item_id,
           title: product.title,
           description: product.description,
@@ -68,9 +64,9 @@ const MarketPage = () => {
           category: product.category,
           marketplace_Id: product.marketplace_id,
           userId: product.user_id,
+          image: product.image_base64,
         }));
-    
-
+        
         setProducts((filteredProducts));
       } catch (error) {
         toast.error("⚠️ Failed to retrieve products in marketplace items.");
@@ -85,14 +81,14 @@ const MarketPage = () => {
     }, [token]);
 
       // Filter products based on searchQuery and selectedCategory
-      const filteredProducts = products.filter((product) => {
-        const matchesSearch = product.title
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-        const matchesCategory =
-          !selectedCategory || product.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-      });
+        const filteredProducts = products.filter((product) => {
+          const query = searchQuery || ""; // Ensure searchQuery is a string
+          const title = product.title || ""; // Ensure product.title is a string
+          const matchesSearch = title.toLowerCase().includes(query.toLowerCase());
+          const matchesCategory =
+            !selectedCategory || product.category === selectedCategory;
+          return matchesSearch && matchesCategory;
+        });
 
   // Add product to cart
   const addToCart = (product) => {

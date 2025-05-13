@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 //Importing Files
 import ProductCard from "./Productcard";
 //Installed Notification
@@ -10,7 +10,6 @@ const ProductGrid = ({ searchQuery, isSidebarOpen, products }) => {
   const [displayedProducts, setDisplayedProducts] = useState([]);
   const noMatchToastShown = useRef(false);
   const [loading, setLoading] = useState(false);
-
   const { cartItems, setCartItems, wishlistItems, setWishlistItems } = useContext(AppContext);
 
   // Avoid spamming Toast Notification
@@ -62,7 +61,7 @@ const ProductGrid = ({ searchQuery, isSidebarOpen, products }) => {
     toast.success(`🎉 "${product.title}" has been added to your cart.`);
   };
 
-  // Add to Wishlist
+  // This is just for the future idea
   const handleAddToWishlist = (product) => {
     if (wishlistItems.some(item => item.marketID === product.marketID)) {
       toast.error("⚠️ This product is already in your wishlist!");
@@ -80,9 +79,7 @@ const ProductGrid = ({ searchQuery, isSidebarOpen, products }) => {
   
 
   return (
-
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
-      <br />
       <div className="grid grid-cols-10 md:grid-cols-3 gap-10 p-4">
         {displayedProducts.length > 0 ? (
           displayedProducts.map((product) => (
