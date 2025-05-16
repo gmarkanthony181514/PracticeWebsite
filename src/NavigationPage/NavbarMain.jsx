@@ -16,6 +16,10 @@ const Navbar = ({ onSearch }) => {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [showSignoutConfirm, setShowSignoutConfirm] = useState(false);
   const [username, setUsername] = useState(null);
+  const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [viewOrders, setViewOrders] = useState([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
   const navigate = useNavigate();
   //useContext for cartItems & setCartItems purpose ( just removing duplication error when applying on many files)
   const { cartItems, wishlistItems } = useContext(AppContext);
@@ -49,6 +53,7 @@ const Navbar = ({ onSearch }) => {
 
         // Prepare the request body
         const requestBody = {
+          lastMarketplaceId: 0,
           title: query || "",
         };
 
@@ -63,11 +68,24 @@ const Navbar = ({ onSearch }) => {
         });
 
         if (response.ok) {
+
+          console.log("API Response Status:", response.status);
           const data = await response.json();
           console.log("Search Results:", data);
 
-          // Pass the search results to the parent component
-          onSearch(data);
+          const searchProducts = Array.isArray(data.data)
+            ? data.data.map(product => ({
+                ...product,
+                id: product.marketplace_id,
+                image: product.image_base64,
+                dateListed: product.date_created,
+              }))
+            : [];
+          if (searchProducts.length > 0) {
+            onSearch(searchProducts);
+          } else {
+            toast.error("⚠️ No products found.");
+          }
         } else {
           const errorText = await response.text();
           toast.error(`⚠️ Failed to search: ${errorText}`);
@@ -77,10 +95,51 @@ const Navbar = ({ onSearch }) => {
         console.error("Search Error:", error);
       }
     };
+  
+      useEffect(() => {
+      const delayDebounce = setTimeout(() => {
+        if (searchQuery.trim() !== "") {
+          handleSearch(searchQuery);
+        }
+      }, 1000);
+
+      return () => clearTimeout(delayDebounce);
+    }, [searchQuery]);
 
   // Log out function
   const handleLogout = () => {
     setShowSignoutConfirm(true);
+  };
+
+    const fetchViewOrders = async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+      toast.error("⚠️ You need to be logged in to view orders.");
+      return;
+    }
+    setIsLoadingOrders(true);
+    try {
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/order/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ lastOrderId: "" }),
+      });
+      const data = await response.json();
+      setViewOrders(Array.isArray(data.data) ? data.data : []);
+    } catch (error) {
+      toast.error("⚠️ Unable to fetch orders.");
+    } finally {
+      setIsLoadingOrders(false);
+    }
+  };
+
+    // Handler for View Orders click
+  const handleViewOrders = async () => {
+    await fetchViewOrders();
+    setShowOrdersModal(true);
   };
 
   const confirmSignout = () => { 
@@ -200,6 +259,15 @@ const Navbar = ({ onSearch }) => {
                     Add Item
               </Link>
             </li>
+            <li className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100">
+              <button
+                type="button"
+                onClick={handleViewOrders}
+                className="block w-full text-left px-4 py-2 text-gray-700"
+              >
+                View Orders
+              </button>
+            </li>
             <li 
               className="p-2 hover:bg-red-100 cursor-pointer"
                onClick={handleLogout}>
@@ -222,6 +290,73 @@ const Navbar = ({ onSearch }) => {
         )}
       </div>
     </div>
+
+    {/* Orders Modal */}
+      {showOrdersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-lg shadow-lg w-[90%] max-w-3xl p-6 relative">
+            <button
+              className="absolute top-2 right-4 text-2xl text-gray-500 hover:text-gray-700"
+              onClick={() => setShowOrdersModal(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4">Your Orders</h2>
+            {isLoadingOrders ? (
+              <p>Loading...</p>
+            ) : viewOrders.length > 0 ? (
+              <div className="max-h-[400px] overflow-auto">
+                <table className="table-auto border-collapse border border-gray-300 w-full">
+                  <thead>
+                    <tr>
+                      <th className="border px-2 py-1">Order ID</th>
+                      <th className="border px-2 py-1">Image</th>
+                      <th className="border px-2 py-1">Title</th>
+                      <th className="border px-2 py-1">Category</th>
+                      <th className="border px-2 py-1">Price</th>
+                      <th className="border px-2 py-1">Quantity</th>
+                      <th className="border px-2 py-1">Status</th>
+                      <th className="border px-2 py-1">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {viewOrders.map((order) => (
+                      <tr key={`${order.order_id}-${order.marketplace_id}`}>
+                        <td className="border px-2 py-1">{order.order_id}</td>
+                        <td className="border px-2 py-1">
+                          {order.image_base64 ? (
+                            <img
+                              src={
+                                order.image_base64.startsWith("data:image/")
+                                  ? order.image_base64
+                                  : `data:image/jpeg;base64,${order.image_base64}`
+                              }
+                              alt={order.title}
+                              className="w-10 h-10 object-cover rounded"
+                            />
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td className="border px-2 py-1">{order.title}</td>
+                        <td className="border px-2 py-1">{order.category}</td>
+                        <td className="border px-2 py-1">${order.price_at_purchase}</td>
+                        <td className="border px-2 py-1">{order.quantity}</td>
+                        <td className="border px-2 py-1">{order.status}</td>
+                        <td className="border px-2 py-1">{order.date_created}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>No orders found.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+
           {/* Alertmessage Component */}
           {showSignoutConfirm && (
         <Alertmessage

@@ -1,17 +1,15 @@
-import {  useState } from 'react';
+import {  useState, useEffect} from 'react';
 //useLocation for Online GoogleMap
 import { useLocation, useNavigate } from 'react-router-dom';
 //Package Notication
 import { toast } from 'react-hot-toast';
 //Backend Connector
-import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnector/apiRoutes';
+import { API_BACKENDRICOAPI_URL } from '../BackendConnector/apiRoutes';
 
   const Checkout = () => {
     const location = useLocation();
     const { cartItems = [], total = 0 } = location.state || {};
     const [isLoading, setIsLoading] = useState(false);
-    const [transactionHistory, setTransactionHistory] = useState([]);
-    const [showTransactionHistory, setShowTransactionHistory] = useState(false);
     const deliveryFee = 9.99;
     const vat = total * 0.00;
     const grandTotal = total + vat + deliveryFee;
@@ -31,26 +29,21 @@ import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnec
           }
           return { token };
         };
-  
-    //Place Order Button Functionalities
-      const handlePlaceOrder = async () => {
-    //Applying the getSessionData functionalities
-      const sessionData = getSessionData();
-  //Double Checking if the Token are still saved on the sessionStorage
-    if (!sessionData) {
-      toast.error(" ⚠️ Your sign in has been expired! Please sign in again...")
-        setTimeout(() => {
-          navigate("/loginregister");
-        }, 2500); 
-    return;
-    }
+
+  const handlePlaceOrder = async () => {
+    const sessionData = getSessionData();
+      if (!sessionData) {
+        toast.error(" ⚠️ Your sign in has been expired! Please sign in again...")
+          setTimeout(() => {
+            navigate("/loginregister");
+          }, 2500); 
+      return;
+      }
 
   //Extracting the token
   const { token } = sessionData;
-  //Getting Cart Items from the API Body
-    const requestBody = {
-      cartItems,
-    };
+  const cart_ids = cartItems.map(item => item.cart_id);
+
     setIsLoading(true);
   
   //Rico API Endpoint for api/order/checkout
@@ -61,15 +54,15 @@ import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnec
           "Content-Type": "application/json",
            Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({cart_ids}),
       });
   
       console.log("API Response Status:", response.status);
       const data = await response.json();
       console.log("API Response Data:", data);
   
-      if (data ===  "Order placed successfully.") {
-        toast.success("🎉 Your order has been placed successfully! Redirecting to Marketplace...");
+      if (data === "Order placed successfully.") {
+        toast.success("🎉 Your order has been placed successfully!");
         setTimeout(() => {
           navigate("/marketplace");
         }, 1500);
@@ -83,103 +76,38 @@ import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnec
       setIsLoading(false);
     }
   };
-  
-  //NO API YET FOR THIS
-  const handleCancelOrder = async () => {
-    const sessionData = getSessionData();
-    if (!sessionData) return;
-  
-    const { token, cartSession } = sessionData;
-  
-    const requestBody = {
-      token,
-      cartsession: cartSession,
-    };
-  
-    console.log("Request Body:", requestBody);
-  
-    setIsLoading(true);
-  
+
+  const handleCancelOrder = async (order_id) => {
     try {
-      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/CancelOrder`, {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        toast.error("⚠️ You need to be logged in to cancel an order.");
+        return;
+      }
+
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/order/cancel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody),
-      });
-  
-      console.log("API Response Status:", response.status);
-      const data = await response.json();
-      console.log("API Response Data:", data);
-  
-      if (data === "cancelled order" || data.message === "cancelled order") {
-        toast.success('🎉 Order successfully canceled!');
-        sessionStorage.removeItem("cartSessionId"); // Clear cart session after cancellation
-        navigate('/marketplace'); // Redirect to marketplace or another page
-      } else if (data === "cartsession not found" || data.message === "cartsession not found") {
-        toast.error("Cart session not found or not checked out.");
-      } else if (data === "Error: Cannot Validate User" || data.message === "Error: Cannot Validate User") {
-        toast.error("Session expired. Please log in again.");
-      } else if (data === "Cannot cancel order" || data.message === "Cannot cancel order") {
-        toast.error("Failed to cancel the order. Please try again.");
-      } else {
-        toast.error("Cancellation failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error during order cancellation:", error);
-      toast.error("Error processing cancellation. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
-  //NO API YET FOR THIS
-  const handleViewTransactionHistory = async () => {
-
-    const token = sessionStorage.getItem("token");
-    if (!token || token.trim() === "") {
-      toast.error("⚠️ Invalid or missing token. Please log in again.");
-      return;
-    }
-
-    const requestBody = {
-      token,
-    };
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/ViewTransactionHistory`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ order_id }),
       });
 
-      console.log("API Response Status:", response.status);
-      const data = await response.json();
-      console.log("API Response Data:", data);
-
-      if (Array.isArray(data)) {
-        setTransactionHistory(data);
-        setShowTransactionHistory(true);
-        toast.success("🎉 Transaction history retrieved successfully!");
-      } else if (data === "Cannot get transaction history") {
-        toast.error("⚠️ Unable to retrieve transaction history.");
+      const data = await response.text();
+      if (response.ok && data === "Order cancelled") {
+        toast.success("Order cancelled successfully!");
+        setTransactionHistory((prev) =>
+          prev.filter((t) => t.order_id !== order_id)
+        );
       } else {
-        toast.error("⚠️ Unexpected error occurred. Please try again.");
+        toast.error(`⚠️ ${data}`);
       }
     } catch (error) {
-      console.error("Error fetching transaction history:", error);
-      toast.error("⚠️ Error processing transaction history. Please try again.");
-    } finally {
-      setIsLoading(false);
+      toast.error("⚠️ Unable to cancel order. Please try again.");
+      console.error("Cancel Order Error:", error);
     }
   };
-
 
   return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-[#c9e5e9] to-[#ccddf9] px-4 py-8">
@@ -312,27 +240,42 @@ import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnec
           <h2 className="text-center text-xl font-semibold">Order Summary</h2>
           <div className="w-full h-px bg-gray-300"></div>
 
-          {cartItems.length > 0 ? (
-            cartItems.map((item) => (
-              <div key={`${item.marketplace_id}`} className="w-full space-y-2">
-                <div className="flex">
-                  <img src={item.image} 
-                  alt={item.title} 
-                  className="w-[30%] rounded" />
-                  <div className="pl-4">
-                    <p className="font-medium text-lg">{item.title}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                  </div>
-                </div>
-                <div className="text-right text-blue-600 font-semibold text-lg">
-                  ${(item.price * item.quantity).toFixed(2)}
-                </div>
-                <div className="w-full h-px bg-gray-300"></div>
-              </div>
-            ))
-          ) : (
-            <p>No items in cart.</p>
-          )}
+            {cartItems.length > 0 ? (
+              <table className="table-auto border-collapse border border-gray-300 w-full">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 px-4 py-2">Image</th>
+                    <th className="border border-gray-300 px-4 py-2">Title</th>
+                    <th className="border border-gray-300 px-4 py-2">Price</th>
+                    <th className="border border-gray-300 px-4 py-2">Quantity</th>
+                  </tr>
+                </thead>
+                  <tbody>
+                    {cartItems.map((item) => (
+                      <tr key={`${item.cart_id}`}>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <img
+                            src={
+                              item.image_base64
+                                ? item.image_base64.startsWith("data:image/")
+                                  ? item.image_base64
+                                  : `data:image/jpeg;base64,${item.image_base64}`
+                                : "defaultImage.jpg"
+                            }
+                            alt={item.title}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">{item.title}</td>
+                        <td className="border border-gray-300 px-4 py-2">${item.price}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.quantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+              </table>
+            ) : (
+              <p>No products to checkout.</p>
+            )}
 
           <div className="flex justify-between text-sm text-gray-600 pt-2">
             <div className="space-y-1">
@@ -346,59 +289,8 @@ import { API_BACKENDMATTAPI_URL, API_BACKENDRICOAPI_URL } from '../BackendConnec
               <p className="font-bold text-xl text-black">${grandTotal.toFixed(2)}</p>
             </div>
           </div>
-          <button 
-            onClick={handleCancelOrder}
-            disabled={isLoading}
-            className="w-full bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition text-lg mt-4"
-          >
-            {isLoading ? 'Processing...' : 'Cancel Order'}
-          </button>
-          <button 
-            onClick={handleViewTransactionHistory}
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition text-lg mt-4"
-          >
-            {isLoading ? 'Loading...' : 'View Transaction History'}
-          </button>
         </div>
       </div>
-
-       {/* Transaction History Modal */}
-       {showTransactionHistory && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-6">
-          <div className="bg-white p-8 rounded-2xl shadow-xl w-full md:w-[600px] max-w-full relative">
-            <button
-              className="absolute top-4 right-6 text-gray-500 text-4xl font-bold hover:text-gray-700"
-              onClick={() => setShowTransactionHistory(false)}
-            >
-              &times;
-            </button>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Transaction History</h2>
-            {transactionHistory.length > 0 ? (
-              <table className="table-auto border-collapse border border-gray-300 w-full">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-300 px-4 py-2">Cart ID</th>
-                    <th className="border border-gray-300 px-4 py-2">Item</th>
-                    <th className="border border-gray-300 px-4 py-2">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactionHistory.map((transaction) => (
-                    <tr key={transaction.cartid}>
-                      <td className="border border-gray-300 px-4 py-2">{transaction.cartid}</td>
-                      <td className="border border-gray-300 px-4 py-2">{transaction.item}</td>
-                      <td className="border border-gray-300 px-4 py-2">{transaction.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No transaction history found.</p>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

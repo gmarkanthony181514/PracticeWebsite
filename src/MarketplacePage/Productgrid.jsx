@@ -41,22 +41,6 @@ const ProductGrid = ({ searchQuery, isSidebarOpen, products }) => {
 
   // Add to Cart
   const handleAddToCart = (product) => {
-    if (cartItems.some((item) => item.marketID === product.marketID)) {
-      toast.error("⚠️ This product is already in your cart!");
-      return;
-    }
-
-    const productWithIDs = {
-      ...product,
-      cartID: product.cartID || "",
-      cartsessionID: product.cartsessionID || "",
-    };
-  
-    setCartItems((prevItems) => {
-      const updatedCart = [...prevItems, productWithIDs];
-      sessionStorage.setItem("cartItems", JSON.stringify(updatedCart));
-      return updatedCart;
-    });
   
     toast.success(`🎉 "${product.title}" has been added to your cart.`);
   };

@@ -14,9 +14,14 @@ import { toast } from 'react-hot-toast';
 const AddingItem = ({ addToCart, isSidebarOpen }) => {
   const [localProducts, setLocalProducts] = useState([]);
   const [visibleProducts, setVisibleProducts] = useState(8);
-  const [selectedFilter, setSelectedFilter] = useState("Active"); // New state for filter
+  const [selectedFilter, setSelectedFilter] = useState("Active");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editItemId, setEditItemId] = useState(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [lastItemId, setLastItemId] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [alertConfig, setAlertConfig] = useState({});
   const [fileName, setFileName] = useState("");
   const [items, setItems] = useState([]);
@@ -216,6 +221,67 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
     
       setShowAlert(true);
     };
+
+      const handleUpdateItem = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        toast.error("⚠️ No token found. User must Sign in first!");
+        return;
+      }
+
+      const { title, description, category, quantity, price, image } = newProduct;
+      if (!title || !description || !category || !quantity || !price) {
+        toast.error("⚠️ All fields except image are required.");
+        return;
+      }
+      if (isNaN(quantity) || parseInt(quantity) <= 0) {
+        toast.error("⚠️ Quantity must be a positive integer.");
+        return;
+      }
+      if (isNaN(price) || parseFloat(price) <= 0) {
+        toast.error("⚠️ Price must be a positive number.");
+        return;
+      }
+
+      const updatePayload = {
+        item_id: editItemId,
+        title,
+        description,
+        category,
+        quantity: parseInt(quantity),
+        price: parseFloat(price),
+        image_base64: image,
+      };
+
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/Updateitem`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatePayload),
+      });
+
+      console.log("Update Item API Response:", response.status);
+      const data = await response.json();
+      console.log("Update Item Response Data:", data);
+
+      if (data === "Item updated successfully") {
+        toast.success("🎉 Item updated successfully!");
+        setShowAddItemModal(false);
+        setIsEditMode(false);
+        setEditItemId(null);
+        setNewProduct({ title: "", description: "", category: "", quantity: "", price: "", image: "" });
+        setLocalProducts([]);
+        fetchItems(0);
+      } else {
+        toast.error(`⚠️ ${data}`);
+      }
+    } catch (error) {
+      toast.error(`⚠️ Error updating item: ${error.message}`);
+    }
+  };
   
   //Delete button Function
     const handleDeleteItem = (itemId) => {
@@ -271,9 +337,9 @@ const AddingItem = ({ addToCart, isSidebarOpen }) => {
       setShowAlert(true);
     };
 
-const filteredProducts = localProducts.filter(
-  (product) => product.status.toLowerCase() === selectedFilter.toLowerCase()
-);
+    const filteredProducts = localProducts.filter(
+      (product) => product.status.toLowerCase() === selectedFilter.toLowerCase()
+    );
 
   return (
     <div className={`transition-all duration-300 ${isSidebarOpen ? "ml-64 w-[calc(100%-16rem)]" : "w-full"}`}>
@@ -323,6 +389,24 @@ const filteredProducts = localProducts.filter(
               className="w-full bg-green-500 text-white py-2 rounded"
             >
               List in Marketplace
+            </button>
+            <button
+              onClick={() => {
+                setIsEditMode(true);
+                setEditItemId(product.item_id);
+                setShowAddItemModal(true);
+                setNewProduct({
+                  title: product.title,
+                  description: product.description,
+                  category: product.category,
+                  quantity: product.quantity,
+                  price: product.price,
+                  image: product.image_base64,
+                });
+                }}
+                className="w-full bg-yellow-500 text-white py-2 rounded"
+              >
+                Edit
             </button>
             <button
               onClick={() => handleDeleteItem(product.item_id)}
@@ -480,9 +564,9 @@ const filteredProducts = localProducts.filter(
               <button
                 type="button"
                 className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold transition-all duration-300 hover:bg-blue-700"
-                onClick={handleAddItem}
+                onClick={isEditMode ? handleUpdateItem : handleAddItem}
               >
-                Create Item
+                {isEditMode ? "Update Item" : "Create Item"}
               </button>
             </div>
           </div>

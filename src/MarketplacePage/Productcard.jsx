@@ -144,9 +144,9 @@ const ProductCard = ({ product, addToCart, addToWishlist }) => {
         onClick={handleCardClick}
       >
         {/* Badge */}
-        {product.status && (
+        {product.quantity && (
           <div className="absolute z-10 w-[5em] text-center top-10 left-10 bg-[#007580] text-white px-3 py-1 rounded-lg text-base font-inter font-medium">
-            {product.status}
+            {product.quantity}
           </div>
         )}
 

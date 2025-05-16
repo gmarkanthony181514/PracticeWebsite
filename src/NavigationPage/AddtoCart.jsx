@@ -10,13 +10,11 @@ import Alertmessage from "../AlertModalNotif/Alertmessage";
 import SectionTitle from "../MarketplacePage/ExtraIdeas/SectionTitle";
 
 const AddtoCart = ({ onCartSync }) => {
-  const [cartSessionId, setCartSessionId] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [inputValues, setInputValues] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [editQuantity, setEditQuantity] = useState(null);
   const [editItem, setEditItem] = useState(null);
-  const [showRemoveAllModal, setShowRemoveAllModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const navigate = useNavigate();
 
@@ -53,7 +51,7 @@ const AddtoCart = ({ onCartSync }) => {
         if (Array.isArray(data.data)) {
           const updatedCartItems = addToCartFetch.map((item) => ({
             ...item,
-            quantity: item.quantity > 0 ? item.quantity : 1, // Default to 1 if quantity is not valid
+            quantity: item.quantity > 0 ? item.quantity : 1,
           }));
 
           setCartItems(updatedCartItems);
@@ -76,63 +74,72 @@ const AddtoCart = ({ onCartSync }) => {
     return sum + item.price * validQty;
   }, 0);
 
-  const updateQuantity = async (id, change) => {
-    try {
-      const numericId = parseInt(id); // Parse id as a number if possible
-      const cartItem = cartItems.find((item) => item.marketplace_id === numericId);
-  
-      if (!cartItem || !cartItem.CartID) {
-        toast.error("⚠️ Invalid cart item. Please try again.");
-        return;
-      }
+    const updateQuantity = async (marketplace_id, change) => {
+      try {
 
-      const newQuantity = cartItem.quantity + change;
-      if (newQuantity < 1) {
-        toast.error("⚠️ Quantity cannot be less than 1.");
-        return;
-      }
+        const numericId = parseInt(marketplace_id);
+        const cartItem = cartItems.find((item) => item.marketplace_id === numericId);
 
-      const token = sessionStorage.getItem("token");
-      const payload = {
-        token,
-        cartid: cartItem.CartID,
-        quantity: Math.abs(change),
-        add: change > 0 ? true : null,
-        minus: change < 0 ? true : null,
-      };
-  
-      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/EditCart`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      const data = await response.text();
-      console.log(data);
-  
-      if (data === "Cart edited") {
-        setCartItems((prevCart) =>
-          prevCart.map((item) =>
-            item.marketplace_id === numericId
-              ? { ...item, Quantity: newQuantity }
-              : item
-          )
-        );
-        onCartSync(cartItems);
-        toast.success("Cart updated successfully!");
-      } else {
-        toast.error(`⚠️ ${data}`);
+        if (!cartItem) {
+          toast.error("⚠️ Invalid cart item. Please try again.");
+          return;
+        }
+
+        const newQuantity = cartItem.quantity + change;
+        if (newQuantity < 1) {
+          toast.error("⚠️ Quantity cannot be less than 1.");
+          return;
+        }
+
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+          toast.error("⚠️ You need to be signed in.");
+          return;
+        }
+
+        // Try sending cart_id instead of marketplace_id if your backend expects it
+        const requestBody = {
+          marketplace_id: numericId,
+          quantity: newQuantity,
+        };
+
+        const response = await fetch(`${API_BACKENDRICOAPI_URL}/Cart/update`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        const data = await response.text();
+        console.log("Update quantity response:", data);
+
+        if (response.ok && data === "Item removed from cart.") {
+          setCartItems((prevCart) =>
+            prevCart.filter((item) => item.marketplace_id !== numericId)
+          );
+          toast.success("Item removed from cart.");
+        } else if (response.ok) {
+          setCartItems((prevCart) =>
+            prevCart.map((cartItem) =>
+              cartItem.marketplace_id === item.marketplace_id
+                ? { ...cartItem, quantity: parsed } // <-- use lowercase 'quantity'
+                : cartItem
+            )
+          );
+          toast.success("Cart updated successfully!");
+        } else {
+          toast.error(`⚠️ ${data}`);
+        }
+      } catch (error) {
+        console.error("Error updating quantity:", error);
+        toast.error("⚠️ Unable to update cart. Please try again.");
       }
-    } catch {
-      console.error("Error updating quantity:", error);
-      toast.error("⚠️ Unable to update cart. Please try again.");
-    }
-  };
+    };
 
   //API RemoveFromCart
-  const removeFromCart = async (cartId) => {
+  const removeFromCart = async (cart_id) => {
     try {
       const token = sessionStorage.getItem("token");
       if (!token) {
@@ -141,10 +148,10 @@ const AddtoCart = ({ onCartSync }) => {
       }
 
       const requestBody = {
-        item_id: cartId,
+        cart_id,
       }
   
-      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/Deleteitem`, {
+      const response = await fetch(`${API_BACKENDRICOAPI_URL}/api/Cart/remove`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,60 +164,15 @@ const AddtoCart = ({ onCartSync }) => {
       const data = await response.text();
       console.log("API Response Data:", data);
   
-      if (response.ok && data === "Item removed from cart.") {
-        setCartItems((prevCart) => prevCart.filter((item) => item.cart_id !== cartId));
-        toast.success("Item removed from cart successfully!");
+      if (response.ok && data === "Item removed") {
+        setCartItems((prevCart) => prevCart.filter((item) => item.cart_id !== cart_id));
+        toast.success("An item has been removed from your cart!");
       } else {
         toast.error(`⚠️ ${data}`);
       }
     } catch (error) {
       console.error("Error removing item from cart:", error);
       toast.error("⚠️ Unable to remove item from cart. Please try again.");
-    }
-  };
-
-  //API RemoveAllFromCart
-  const removeAllFromCart = async () => {
-    const token = sessionStorage.getItem("token");
-    const cartSessionId = sessionStorage.getItem("cartSessionId");
-  
-    if (!cartSessionId || cartSessionId === "No ID") {
-      toast.error("⚠️ Invalid cart session. Please try again.");
-      return;
-    }
-  
-    if (!token) {
-      toast.error("⚠️ You need to be logged in to remove all items from your cart.");
-      return;
-    }
-  
-    const requestBody = {
-      token,
-      cartsession: cartSessionId,
-    };
-  
-    try {
-      const response = await fetch(`${API_BACKENDMATTAPI_URL}/api/RemoveAllFromCart`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-  
-      const data = await response.text();
-      if (data === "All cart item has been removed") {
-        setCartItems([]);
-        onCartSync([]);
-        sessionStorage.removeItem("cartSessionId");
-        setCartSessionId(null);
-        toast.success("All items have been removed from your cart!");
-      } else {
-        toast.error(`⚠️ Unexpected error: ${data}`);
-      }
-    } catch (error) {
-      console.error("Error removing all items from cart:", error);
-      toast.error("⚠️ Unable to remove all items from cart. Please try again.");
     }
   };
 
@@ -235,24 +197,14 @@ const AddtoCart = ({ onCartSync }) => {
   };
 
   // Submit edited quantity
-  const submitEditedQuantity = () => {
-    if (editQuantity !== "" && editQuantity > 0) {
-      setCartItems((prevCart) =>
-        prevCart.map((cartItem) =>
-          cartItem.marketID === editItem.marketID
-            ? { ...cartItem, quantity: editQuantity }
-            : cartItem
-        )
-      );
-      setInputValues((prev) => ({
-        ...prev,
-        [editItem.marketID]: editQuantity.toString(),
-      }));
-      closeModal();
-    } else {
-      toast.error(" ⚠️ Please enter quantity.");
-    }
-  };
+const submitEditedQuantity = () => {
+  if (editQuantity !== "" && editQuantity > 0) {
+    updateQuantity(editItem.marketplace_id, editQuantity - editItem.quantity);
+    closeModal();
+  } else {
+    toast.error(" ⚠️ Please enter quantity.");
+  }
+};
 
   return (
     <div>
@@ -270,7 +222,12 @@ const AddtoCart = ({ onCartSync }) => {
             {cartItems.map((item) => (
               <div key={`${item.cart_id}-${item.marketplace_id}`} className="flex items-center border-b py-5 space-x-6">
                 <img 
-                  src={item.image} 
+                  src={item.image_base64
+                        ? item.image_base64.startsWith("data:image/")
+                        ? item.image_base64
+                        : `data:image/jpeg;base64,${item.image_base64}`
+                      : "defaultImage.jpg"
+                  } 
                   alt={item.title} 
                   className="w-24 h-24 rounded-md object-cover" 
                 />
@@ -345,14 +302,6 @@ const AddtoCart = ({ onCartSync }) => {
       <div className="w-full bg-white shadow-lg p-6 flex justify-between items-center border-t mt-auto">
         <span className="text-3xl font-bold">Total: ${total.toFixed(2)}</span>
         <button
-          onClick={() =>
-             setShowRemoveAllModal(true)
-            }
-          className="py-4 px-10 bg-gray-600 text-white font-bold rounded-lg text-3xl hover:bg-gray-700 transition"
-        >
-          CLEAR CART
-        </button>
-        <button
           onClick={() => 
             setShowCheckoutModal(true)
           }
@@ -363,26 +312,13 @@ const AddtoCart = ({ onCartSync }) => {
         </div>
       </div>
 
-      {/* Remove All Cart Modal */}
-        {showRemoveAllModal && (
-          <Alertmessage
-            title="Remove All Cart"
-            message="Are you sure you want to remove all items from your cart?"
-            onConfirm={() => {
-              removeAllFromCart(); // Call the removeAllFromCart function
-              setShowRemoveAllModal(false); // Close the modal
-            }}
-            onCancel={() => setShowRemoveAllModal(false)} // Close the modal
-          />
-        )}
-
         {/* Checkout Modal */}
         {showCheckoutModal && (
           <Alertmessage
             title="Checkout"
             message="Are you sure you want to proceed to checkout?"
             onConfirm={() => {
-              navigate("/checkout", { state: { cartItems, total, cartSessionId } }); // Navigate to checkout
+              navigate("/checkout", { state: { cartItems, total } });
               setShowCheckoutModal(false); // Close the modal
             }}
             onCancel={() => setShowCheckoutModal(false)} // Close the modal
