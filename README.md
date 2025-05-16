@@ -1,5 +1,3 @@
 #Rico as a Backend
 
-Status: Nearly Completed yet based on Rico Documentation
-
-Have an error on newly API Search
+Status: Completed May 16, 2025
