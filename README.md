@@ -1,7 +1,12 @@
-#Rico as a Backend
+# Rico as a Backend
 
-Status: Completed May 16, 2025
+![Status](https://img.shields.io/badge/status-completed-brightgreen)
 
-Backend Documentation (only implemented):
+**Status:** _Completed May 16, 2025_
 
-https://www.notion.so/Intern-Documentation-1f650597e322800cac6dd3c43ec4f160?pvs=4
+## 📄 Backend Documentation
+
+> [Intern Documentation on Notion]
+> (https://www.notion.so/Intern-Documentation-1f650597e322800cac6dd3c43ec4f160?pvs=4)
+
+---
