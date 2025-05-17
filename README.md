@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-completed-brightgreen)
 
-**Status:** _Completed May 16, 2025_
+ _Completed on May 16, 2025_
 
 ## 📄 Backend Documentation
 
