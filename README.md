@@ -7,6 +7,6 @@
 ## 📄 Backend Documentation
 
 > [Intern Documentation on Notion]
-> (https://www.notion.so/Intern-Documentation-1f650597e322800cac6dd3c43ec4f160?pvs=4)
+> https://delicious-plough-0ee.notion.site/Intern-Documentation-1f650597e322800cac6dd3c43ec4f160
 
 ---
